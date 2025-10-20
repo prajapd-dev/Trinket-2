@@ -6,7 +6,7 @@ import { RootNavigator } from "./components/Navigation/RootNavigator";
 import SplashScreen from "./components/Screens/SplashScreen";
 
 export default function App() {
-  const [session, setSession] = useState(false);
+  const [session, setSession] = useState(true);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true); // only show once
 
