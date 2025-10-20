@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Text } from "react-native";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import LavenderBackground from "../LavenderBackground"; // your animated background
 
 export default function Auth() {
@@ -16,7 +24,7 @@ export default function Auth() {
         style={styles.inputContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-         {/* Title */}
+        {/* Title */}
         <Text style={styles.title}>Sign In To Your Account</Text>
 
         <TextInput
@@ -29,13 +37,15 @@ export default function Auth() {
           value={email}
           onChangeText={setEmail}
         />
-         {/* Remember me */}
+        {/* Remember me */}
         <TouchableOpacity
           style={styles.rememberContainer}
           onPress={() => setRememberMe(!rememberMe)}
           activeOpacity={0.8}
         >
-          <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]} />
+          <View
+            style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+          />
           <Text style={styles.rememberText}>Remember me for 30 days</Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
@@ -53,7 +63,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#FFF",
+    color: "#444343ff",
     marginBottom: 20,
     textShadowColor: "rgba(0,0,0,0.2)",
     textShadowOffset: { width: 0, height: 1 },
@@ -89,7 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   rememberText: {
-    color: "#FFF",
+    color: "#5f5e5eff",
     fontSize: 14,
   },
 });
