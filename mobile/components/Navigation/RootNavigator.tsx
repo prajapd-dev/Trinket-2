@@ -6,6 +6,8 @@ import MarketList from "../Screens/MarketList";
 import TabsNavigator from "./TabNavigator";
 import OnboardingScreen from "../Screens/Onboarding";
 import EmailVerification from "../Auth/EmailVerification";
+import AddMarketScreen from "../Screens/AddMarket";
+import EditMarketScreen from "../Screens/EditMarket";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -40,6 +42,12 @@ export function RootNavigator({
       {session && (
         <>
           <Stack.Screen name="MarketList" component={MarketList} />
+          <Stack.Screen name="AddMarketScreen" options={{presentation: 'modal',
+        }} component={AddMarketScreen}
+      />
+          <Stack.Screen name="EditMarketScreen" options={{presentation: 'modal',
+        }} component={EditMarketScreen}
+      />
           <Stack.Screen name="MainTabs">
             {(props) => <TabsNavigator {...props} session={session} />}
           </Stack.Screen>
