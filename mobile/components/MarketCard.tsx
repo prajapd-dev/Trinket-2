@@ -1,31 +1,38 @@
 import * as React from "react";
 import { StyleSheet } from "react-native";
-import { Card, Text } from "react-native-paper";
+import { Card, Text, IconButton } from "react-native-paper";
 
 type MarketCardProps = {
   name: string;
   image: any; // require("../assets/market.jpg") or { uri: "https://example.com/image.jpg" }
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   onPress?: () => void; // callback when card is pressed
+  onEditPress?: () => void; 
 };
 
-export default function MarketCard({ name, image, startDate, endDate, onPress }: MarketCardProps) {
+export default function MarketCard({ name, image, startDate, endDate, onPress, onEditPress }: MarketCardProps) {
      const imageSource =
     typeof image === "string" ? { uri: image } : image; // handle both cases
-
+    
   return (
     <Card style={styles.card} onPress={onPress} mode="elevated">
       {/* Top image */}
       <Card.Cover source={imageSource} style={styles.image} />
-
+     {/* Edit icon overlay */}
+        <IconButton
+          icon="pencil"
+          size={22}
+          style={styles.editIcon}
+          onPress={onEditPress}
+        />
       {/* Card content */}
       <Card.Content>
         <Text variant="titleMedium" style={styles.title}>
           {name}
         </Text>
         <Text variant="bodyMedium" style={styles.date}>
-          {formatDateRange(startDate, endDate)}
+          {formatDateRange(startDate.toDateString(), endDate.toDateString())}
         </Text>
       </Card.Content>
     </Card>
@@ -56,5 +63,11 @@ const styles = StyleSheet.create({
   date: {
     color: "#6b6b6b",
     marginTop: 4,
+  },
+   editIcon: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    backgroundColor: "rgba(255,255,255,0.8)",
   },
 });
