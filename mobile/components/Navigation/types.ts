@@ -10,6 +10,13 @@ export type RootStackParamList = {
   EmailVerification: undefined;
   MarketList: undefined;
   MainTabs: undefined;
+  AddMarketScreen: undefined;
+   EditMarketScreen: {
+    marketNameCurr: string;
+    startDateCurr: Date;
+    endDateCurr: Date;
+    imgUriCurr: any;
+  };
 };
 
 // Bottom tab routes
