@@ -1,23 +1,35 @@
-import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Button, IconButton, TextInput, Text } from 'react-native-paper';
+import React, { useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Image,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Button, IconButton, TextInput, Text } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../Navigation/types';
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../Navigation/types";
+import axios from "axios";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'EditMarketScreen'>;
+type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
-export default function EditMarketScreen({route, navigation}: Props) {
-const { marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } = route.params; 
+export default function EditMarketScreen({ route, navigation }: Props) {
+  const { marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } =
+    route.params;
   const [marketName, setMarketName] = useState(marketNameCurr);
   const [startDate, setStartDate] = useState<Date | null>(startDateCurr);
   const [endDate, setEndDate] = useState<Date | null>(endDateCurr);
   const [isStartPickerVisible, setStartPickerVisible] = useState(false);
   const [isEndPickerVisible, setEndPickerVisible] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(imgUriCurr);
+  const [imgData, setImageData] =
+    useState<ImagePicker.ImagePickerResult | null>(null);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!marketName.trim() || !startDate || !endDate) {
       Alert.alert("Error", "Please fill all fields and select dates");
       return;
@@ -31,31 +43,61 @@ const { marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } = route.params;
       imageUri,
     });
 
-    
+    if (imgData != null && imgData.assets != null) {
+      const formData = new FormData();
+      const file = {
+        uri: imgData.assets[0].uri,
+        type: imgData.assets[0].mimeType,
+        name: imgData.assets[0].fileName,
+      };
+      formData.append("image", file as any);
+
+      formData.append("marketName", marketName);
+      formData.append("startDate", startDate.toISOString());
+      formData.append("endDate", endDate.toISOString());
+      formData.append("img_uri", imageUri ? imageUri : "");
+      try {
+        const response = await axios.post(
+          "http://192.168.2.173:3000/api/marketEvent/1",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("response:", response);
+        // setImageUri(response.data.downloadUrl)
+      } catch (error) {
+        console.log("error from submission: ", error);
+      }
+    }
     navigation.goBack();
   };
 
-    const pickImage = async () => {
+  const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"], 
-        allowsEditing: true, 
-        aspect: [4, 3],
-        quality: 1
-    })
-     console.log(result);
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    console.log(result);
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
 
-return (
+  return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.form}>
-        <Text variant="headlineMedium" style={styles.title}>Edit Market</Text>
+        <Text variant="headlineMedium" style={styles.title}>
+          Edit Market
+        </Text>
 
         <TextInput
           label="Market Name"
@@ -76,7 +118,7 @@ return (
           isVisible={isStartPickerVisible}
           mode="date"
           minimumDate={new Date()}
-          onConfirm={(date: React.SetStateAction<Date | null>) => {
+          onConfirm={(date: Date) => {
             setStartDate(date);
             setStartPickerVisible(false);
           }}
@@ -93,8 +135,8 @@ return (
         <DateTimePickerModal
           isVisible={isEndPickerVisible}
           mode="date"
-          minimumDate={startDate? startDate : new Date()}
-          onConfirm={(date: React.SetStateAction<Date | null>) => {
+          minimumDate={startDate ? startDate : new Date()}
+          onConfirm={(date: Date)  => {
             setEndDate(date);
             setEndPickerVisible(false);
           }}
@@ -115,7 +157,7 @@ return (
       </View>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

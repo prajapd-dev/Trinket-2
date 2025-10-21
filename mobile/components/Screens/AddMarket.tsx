@@ -52,7 +52,6 @@ export default function AddMarketScreen({navigation}: any) {
         }
       )
       console.log("response:", response)
-      // setImageUri(response.data.downloadUrl)
     } catch (error) {
       console.log("error from submission: ", error)
     }
@@ -102,7 +101,7 @@ return (
           isVisible={isStartPickerVisible}
           mode="date"
           minimumDate={new Date()}
-          onConfirm={(date: React.SetStateAction<Date | null>) => {
+          onConfirm={(date: Date) => {
             setStartDate(date);
             setStartPickerVisible(false);
           }}
@@ -120,7 +119,7 @@ return (
           isVisible={isEndPickerVisible}
           mode="date"
           minimumDate={startDate? startDate : new Date()}
-          onConfirm={(date: React.SetStateAction<Date | null>) => {
+          onConfirm={(date: Date) => {
             setEndDate(date);
             setEndPickerVisible(false);
           }}
