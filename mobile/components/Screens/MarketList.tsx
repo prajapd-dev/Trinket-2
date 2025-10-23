@@ -23,29 +23,22 @@ type ApiResponse = {
 
 export default function MarketList({ navigation }: { navigation: any }) {
   const [markets, setMarkets] = useState<MarketFromAPI[]>([]);
-  const today = new Date();
-  const oneWeekLater = new Date(today);
-  oneWeekLater.setDate(today.getDate() + 7);
-  const marketName = "fan expo canada";
-  const startDate = today;
-  const endDate = oneWeekLater;
-  const imgURI =
-    "https://trinket-photos.s3.us-east-2.amazonaws.com/user-uploads/FanExpoCanada.png";
   function onPressAddMarket() {
     return navigation.navigate("AddMarketScreen", navigation);
   }
 
-  function onPressEditMarket() {
+  function onPressEditMarket(market: MarketFromAPI) {
     return navigation.navigate("EditMarketScreen", {
-      marketNameCurr: marketName,
-      startDateCurr: startDate,
-      endDateCurr: endDate,
-      imgUriCurr: imgURI,
+      marketUUID: market.uuid,
+      marketNameCurr: market.name,
+      startDateCurr: market.startdate,
+      endDateCurr: market.enddate,
+      imgUriCurr: market.img_url,
     });
   }
   const fetchMarkets = async () => {
     const { data } = await axios.get<ApiResponse>(
-      "http://192.168.2.173:3000/api/marketEvent/1"
+      "http://10.0.0.183:3000/api/marketEvent/1"
     );
     const transformed: MarketFromAPI[] = data.markets.map((m) => ({
       ...m,
@@ -55,18 +48,9 @@ export default function MarketList({ navigation }: { navigation: any }) {
 
     
     setMarkets(transformed);
-    console.log("data from fetch markets: ", data)
+    console.log("MarketList: all market data that was fetched ", JSON.stringify(data))
   };
 
-    {/* <MarketCard
-        name={marketName}
-        image={imgURI}
-        startDate={startDate}
-        endDate={endDate}
-        // onPress={() => navigation.navigate("MarketDetails", { marketId: 123 })}
-        onPress={() => navigation.navigate("MainTabs", { screen: "Account" })}
-        onEditPress={onPressEditMarket}
-      /> */}
   useFocusEffect(
     useCallback(() => {
       fetchMarkets(); // re-fetch whenever you navigate back here
@@ -83,7 +67,7 @@ export default function MarketList({ navigation }: { navigation: any }) {
         startDate={m.startdate}
         endDate={m.enddate}
         onPress={() => navigation.navigate("MainTabs", { screen: "Account" })}
-        onEditPress={onPressEditMarket}
+        onEditPress={() => onPressEditMarket(m)}
         />
       )): <Text> No Markets Found</Text>}
     </View>
