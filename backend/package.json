@@ -30,6 +30,7 @@
     "@aws-sdk/s3-request-presigner": "^3.913.0",
     "@neondatabase/serverless": "^1.0.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@topcli/pretty-json": "^1.0.1",
     "cors": "^2.8.5",
     "multer": "^2.0.2"
   }
