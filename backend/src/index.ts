@@ -4,13 +4,15 @@ import { sql } from "./config/db.ts";
 import cors from "cors";
 import multer from "multer";
 import {
-    GetObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
   type PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import PrettyJSON from "@topcli/pretty-json";
+import type { MarketEvent } from "./config/types.ts";
 
 dotenv.config();
 const app = express();
@@ -48,31 +50,38 @@ const s3 = new S3Client({
 
 app.get("/api/marketEvent/:userID", async (req, res) => {
   const { userID } = req.params;
-  console.log("getting markets");
+  console.log(
+    "app.get market/userid: retrieving market data from index.ts with userid: ",
+    userID
+  );
   try {
-    console.log(userID);
     const getMarkets = await sql`
         SELECT * FROM marketEvent WHERE user_id = ${userID} ORDER BY startDate DESC`;
-    console.log(`markets created by user id ${userID}: `, getMarkets);
+    console.log(
+      "app.get: markets retrived by user id: ",
+      userID,
+      "markets",
+      PrettyJSON(getMarkets)
+    );
 
-    for(const market of getMarkets) {
-        const key = `user-uploads/${userID}/${market.img_name}`
-        const getObjectParams = {
-            Bucket: bucketName, 
-            Key: key
-        }
-        const command = new GetObjectCommand(getObjectParams); 
-        const url = await getSignedUrl(s3, command, {expiresIn: 3600} )
-        market.img_url = url;
+    for (const market of getMarkets) {
+      const key = `user-uploads/${userID}/${market.img_name}`;
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: key,
+      };
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      market.img_url = url;
     }
     return res.status(200).json({
       message: "Successfully fetched markets",
       markets: getMarkets,
     });
   } catch (error) {
-    console.log("error getting market event", error);
+    console.log("app.get market/userid: error getting market event", error);
     res.status(500).json({
-      message: `Internal Server Error, could not fetch market event made by user: ${userID}`,
+      message: `Internal Server Error, could not fetch market events made by user: ${userID}`,
     });
   }
 });
@@ -82,11 +91,14 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { userID } = req.params;
-    console.log("req body for post: ", req.body)
     const { marketName, startDate, endDate, img_uri } = req.body;
     const key = `user-uploads/${userID}/${req.file?.originalname}`;
 
-    console.log("req file: ", req.file)
+    console.log(
+      "app.post marketevent/userid: req.body: ",
+      JSON.stringify(req.body)
+    );
+    console.log("app.post marketevent/userid: req.file: ", req.file);
     try {
       if (req.file !== undefined) {
         const params: PutObjectCommandInput = {
@@ -102,23 +114,88 @@ app.post(
             VALUES (${userID}, ${marketName}, ${startDate}, ${endDate}, ${req.file.originalname}, ${img_uri})
             RETURNING *
         `;
-        return res
-          .status(201)
-          .json({
-            message: "successfully uploaded image to s3 and updated record",
-            insertMarket,
-          });
+        return res.status(201).json({
+          message: "successfully uploaded image to s3 and updated record",
+          insertMarket,
+        });
       }
     } catch (error) {
       console.error(
         "Error getting image to post to S3 and/or inserting into table: ",
         error
       );
+      return res.status(500).json({
+        msesage: "internal error, issue posting to s3 and updating table",
+      });
+    }
+  }
+);
+
+app.patch(
+  "/api/marketEvent/:marketID/:userID",
+  upload.single("image"),
+  async (req, res) => {
+    const { marketID, userID } = req.params;
+    const updates = req.body as Partial<MarketEvent>; // may contain any subset of fields
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    // Check if market exists
+    const existing =
+      await sql`SELECT * FROM marketEvent WHERE uuid = ${marketID}`;
+    if (existing.length === 0) {
+      return res.status(404).json({ error: "Market not found" });
+    }
+
+    const setClauses: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(updates)) {
+      setClauses.push(`${key} = $${i}`);
+      values.push(value);
+      i++;
+    }
+
+    try {
+      if (req.file !== undefined) {
+        console.log("app.patch: uploading new image to S3");
+        const key = `user-uploads/${userID}/${req.file?.originalname}`;
+        const params: PutObjectCommandInput = {
+          Bucket: bucketName,
+          Key: key,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        };
+
+        const command = new PutObjectCommand(params);
+        setClauses.push(`img_name = $${i}`);
+        values.push(req.file.originalname);
+        i++;  
+        await s3.send(command);
+      }
+
+      const query = `
+    UPDATE MarketEvent
+    SET ${setClauses.join(", ")}
+    WHERE uuid = ${marketID} AND user_id = ${userID}
+    RETURNING *;
+  `;
+
+      console.log("app.patch: update query: ", query);
+      console.log("app.patch: update values: ", values);
+
+      const updatedMarket = await sql.query(query, values);
+      return res.status(200).json({
+        message: "app.patch: Market updated successfully",
+        updatedMarket: updatedMarket,
+      });
+    } catch {
       return res
         .status(500)
-        .json({
-          msesage: "internal error, issue posting to s3 and updating table",
-        });
+        .json({ error: "app.patch: Internal server error" });
     }
   }
 );
