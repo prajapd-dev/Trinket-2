@@ -16,7 +16,6 @@ export function RootNavigator({
   showOnboarding,
   setShowOnboarding,
 }: any) {
-  console.log(showOnboarding)
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
 
