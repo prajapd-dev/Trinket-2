@@ -12,6 +12,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   AddMarketScreen: undefined;
    EditMarketScreen: {
+    marketUUID: number;
     marketNameCurr: string;
     startDateCurr: Date;
     endDateCurr: Date;

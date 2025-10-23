@@ -15,10 +15,11 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../Navigation/types";
 import axios from "axios";
 
+
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
 export default function EditMarketScreen({ route, navigation }: Props) {
-  const { marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } =
+  const { marketUUID, marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } =
     route.params;
   const [marketName, setMarketName] = useState(marketNameCurr);
   const [startDate, setStartDate] = useState<Date | null>(startDateCurr);
@@ -35,42 +36,71 @@ export default function EditMarketScreen({ route, navigation }: Props) {
       return;
     }
 
-    // Example submission
-    console.log({
+    console.log(
+      "EditMarket submission: marketName: ",
       marketName,
+      " startDate: ",
       startDate,
+      " endDate: ",
       endDate,
-      imageUri,
-    });
+      " img_url: ",
+      imageUri
+    );
+
+    console.log(
+      "EditMarket original values - marketNameCurr: ",
+      marketNameCurr,
+      " startDateCurr: ",
+      startDateCurr,
+      " endDateCurr: ",
+      endDateCurr,
+      " imgUriCurr: ",
+      imgUriCurr
+    );
+    const formData = new FormData();
 
     if (imgData != null && imgData.assets != null) {
-      const formData = new FormData();
+      console.log(
+        "EditMarket: preparing to upload image with data: ",
+        JSON.stringify(imgData)
+      );
       const file = {
         uri: imgData.assets[0].uri,
         type: imgData.assets[0].mimeType,
         name: imgData.assets[0].fileName,
       };
       formData.append("image", file as any);
-
-      formData.append("marketName", marketName);
-      formData.append("startDate", startDate.toISOString());
-      formData.append("endDate", endDate.toISOString());
-      formData.append("img_uri", imageUri ? imageUri : "");
-      try {
-        const response = await axios.post(
-          "http://192.168.2.173:3000/api/marketEvent/1",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log("response:", response);
-        // setImageUri(response.data.downloadUrl)
-      } catch (error) {
-        console.log("error from submission: ", error);
-      }
+    }
+    if (marketNameCurr !== marketName) {
+      formData.append("name", marketName);
+    }
+    if (startDateCurr !== startDate) {
+      formData.append("startdate", startDate.toISOString());
+    }
+    if (endDateCurr !== endDate) {
+      formData.append("enddate", endDate.toISOString());
+    }
+    if (imgUriCurr !== imageUri) {
+      formData.append("img_url", imageUri ? imageUri : "");
+    }
+    try {
+      console.log(
+        "EditMarket: formData to be sent: ",
+        JSON.stringify(formData)
+      );
+      const response = await axios.patch(
+        `http://10.0.0.183:3000/api/marketEvent/${marketUUID}/1`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("EditMarket submission response: ", JSON.stringify(response));
+      setImageUri(response.data.downloadUrl);
+    } catch (error) {
+      console.log("EditMarket error from submission: ", error);
     }
     navigation.goBack();
   };
@@ -79,13 +109,14 @@ export default function EditMarketScreen({ route, navigation }: Props) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 1],
       quality: 1,
     });
-    console.log(result);
+    setImageData(result);
+    console.log("EditMarket: result of img upload:", JSON.stringify(result));
 
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+      setImageUri(result.assets[0].uri); // now imageUri points to the cropped image
     }
   };
 
@@ -136,7 +167,7 @@ export default function EditMarketScreen({ route, navigation }: Props) {
           isVisible={isEndPickerVisible}
           mode="date"
           minimumDate={startDate ? startDate : new Date()}
-          onConfirm={(date: Date)  => {
+          onConfirm={(date: Date) => {
             setEndDate(date);
             setEndPickerVisible(false);
           }}
@@ -183,7 +214,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: "center",
     justifyContent: "center",
-    height: 150,
+    height: 160,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
