@@ -19,15 +19,7 @@ export default function AddMarketScreen({navigation}: any) {
       Alert.alert("Error", "Please fill all fields and select dates");
       return;
     }
-
-    // Example submission
-    console.log("example submission: ", {
-      marketName,
-      startDate,
-      endDate,
-      imageUri,
-    });
-
+    console.log("AddMarket submission: marketName: ", marketName, " startDate: ", startDate, " endDate: ", endDate, " img_url: ", imageUri)
     if (imgData != null && imgData.assets != null) {
     const formData = new FormData(); 
     const file = {
@@ -43,7 +35,7 @@ export default function AddMarketScreen({navigation}: any) {
     formData.append('img_uri', imageUri? imageUri : "")
     try {
       const response = await axios.post(
-        'http://192.168.2.173:3000/api/marketEvent/1', 
+        'http://10.0.0.183:3000/api/marketEvent/1', 
         formData, 
         {
           headers: {
@@ -51,9 +43,9 @@ export default function AddMarketScreen({navigation}: any) {
           }
         }
       )
-      console.log("response:", response)
+      console.log("AddMarket submission response: ", JSON.stringify(response))
     } catch (error) {
-      console.log("error from submission: ", error)
+      console.log("AddMarket error from submission: ", error)
     }
   }
     navigation.goBack({ state: { reload: true } });
@@ -67,7 +59,7 @@ export default function AddMarketScreen({navigation}: any) {
         quality: 1
     })
      setImageData(result)
-     console.log("result of img upload:", result);
+     console.log("AddMarket: result of img upload:", JSON.stringify(result));
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
