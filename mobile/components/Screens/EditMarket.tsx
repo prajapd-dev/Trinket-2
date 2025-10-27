@@ -13,8 +13,8 @@ import { Button, IconButton, TextInput, Text } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../Navigation/types";
+import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
-
 
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
@@ -89,7 +89,7 @@ export default function EditMarketScreen({ route, navigation }: Props) {
         JSON.stringify(formData)
       );
       const response = await axios.patch(
-        `http://10.0.0.183:3000/api/marketEvent/${marketUUID}/1`,
+        `http://192.168.2.173:3000/api/marketEvent/${marketUUID}/1`,
         formData,
         {
           headers: {
@@ -121,72 +121,85 @@ export default function EditMarketScreen({ route, navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <View style={styles.form}>
-        <Text variant="headlineMedium" style={styles.title}>
-          Edit Market
-        </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Back arrow fixed at top-left */}
 
-        <TextInput
-          label="Market Name"
-          value={marketName}
-          onChangeText={setMarketName}
-          mode="outlined"
-          style={styles.input}
-        />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <View style={styles.header}>
+          <View style={styles.backButton}>
+            <IconButton
+              icon="arrow-left"
+              size={28}
+              onPress={() => navigation.goBack()}
+            />
+          </View>
+        </View>
+        <View style={styles.form}>
+          <Text variant="headlineMedium" style={styles.title}>
+            Edit Market
+          </Text>
 
-        <Button
-          mode="outlined"
-          onPress={() => setStartPickerVisible(true)}
-          style={styles.input}
-        >
-          {startDate ? startDate.toDateString() : "Select Start Date"}
-        </Button>
-        <DateTimePickerModal
-          isVisible={isStartPickerVisible}
-          mode="date"
-          minimumDate={new Date()}
-          onConfirm={(date: Date) => {
-            setStartDate(date);
-            setStartPickerVisible(false);
-          }}
-          onCancel={() => setStartPickerVisible(false)}
-        />
+          <TextInput
+            label="Market Name"
+            value={marketName}
+            onChangeText={setMarketName}
+            mode="outlined"
+            style={styles.input}
+          />
 
-        <Button
-          mode="outlined"
-          onPress={() => setEndPickerVisible(true)}
-          style={styles.input}
-        >
-          {endDate ? endDate.toDateString() : "Select End Date"}
-        </Button>
-        <DateTimePickerModal
-          isVisible={isEndPickerVisible}
-          mode="date"
-          minimumDate={startDate ? startDate : new Date()}
-          onConfirm={(date: Date) => {
-            setEndDate(date);
-            setEndPickerVisible(false);
-          }}
-          onCancel={() => setEndPickerVisible(false)}
-        />
+          <Button
+            mode="outlined"
+            onPress={() => setStartPickerVisible(true)}
+            style={styles.input}
+          >
+            {startDate ? startDate.toDateString() : "Select Start Date"}
+          </Button>
+          <DateTimePickerModal
+            isVisible={isStartPickerVisible}
+            mode="date"
+            minimumDate={new Date()}
+            onConfirm={(date: Date) => {
+              setStartDate(date);
+              setStartPickerVisible(false);
+            }}
+            onCancel={() => setStartPickerVisible(false)}
+          />
 
-        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.image} />
-          ) : (
-            <IconButton icon="camera-plus" size={40} />
-          )}
-        </TouchableOpacity>
+          <Button
+            mode="outlined"
+            onPress={() => setEndPickerVisible(true)}
+            style={styles.input}
+          >
+            {endDate ? endDate.toDateString() : "Select End Date"}
+          </Button>
+          <DateTimePickerModal
+            isVisible={isEndPickerVisible}
+            mode="date"
+            minimumDate={startDate ? startDate : new Date()}
+            onConfirm={(date: Date) => {
+              setEndDate(date);
+              setEndPickerVisible(false);
+            }}
+            onCancel={() => setEndPickerVisible(false)}
+          />
 
-        <Button mode="contained" onPress={handleSubmit} style={styles.button}>
-          Update
-        </Button>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            ) : (
+              <IconButton icon="camera-plus" size={40} />
+            )}
+          </TouchableOpacity>
+
+          <Button mode="contained" onPress={handleSubmit} style={styles.button}>
+            Update
+          </Button>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -196,6 +209,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
     backgroundColor: "#fff",
+  },
+  backButton: {
+    width: 50, // bigger circle
+    height: 50,
+    borderRadius: 25, // perfect circle
+    backgroundColor: "#d2ceceff", // grey background
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
+  },
+  header: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 50 : 24, // top-left
+    left: 24,
+    zIndex: 1, // ensure it floats above form
   },
   form: {
     width: "100%",
