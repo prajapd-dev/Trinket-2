@@ -38,7 +38,7 @@ export default function MarketList({ navigation }: { navigation: any }) {
   }
   const fetchMarkets = async () => {
     const { data } = await axios.get<ApiResponse>(
-      "http://10.0.0.183:3000/api/marketEvent/1"
+      "http://192.168.2.173:3000/api/marketEvent/1"
     );
     const transformed: MarketFromAPI[] = data.markets.map((m) => ({
       ...m,
@@ -46,7 +46,7 @@ export default function MarketList({ navigation }: { navigation: any }) {
       enddate: new Date(m.enddate),
     }));
 
-    
+    transformed.sort((a, b) => a.startdate.getTime() - b.startdate.getTime());
     setMarkets(transformed);
     console.log("MarketList: all market data that was fetched ", JSON.stringify(data))
   };

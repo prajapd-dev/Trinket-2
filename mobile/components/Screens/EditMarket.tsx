@@ -129,13 +129,13 @@ export default function EditMarketScreen({ route, navigation }: Props) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.header}>
-          <View style={styles.backButton}>
+            <View style={styles.backButton}>
             <IconButton
               icon="arrow-left"
               size={28}
               onPress={() => navigation.goBack()}
             />
-          </View>
+            </View>
         </View>
         <View style={styles.form}>
           <Text variant="headlineMedium" style={styles.title}>
