@@ -2,12 +2,15 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types";
 import Auth from "../Auth/Auth";
-import MarketList from "../Screens/MarketList";
+import MarketList from "../Screens/Market/MarketList";
 import TabsNavigator from "./TabNavigator";
-import OnboardingScreen from "../Screens/Onboarding";
+import OnboardingScreen from "../Screens/Entry/Onboarding";
 import EmailVerification from "../Auth/EmailVerification";
-import AddMarketScreen from "../Screens/AddMarket";
-import EditMarketScreen from "../Screens/EditMarket";
+import AddMarketScreen from "../Screens/Market/AddMarket";
+import EditMarketScreen from "../Screens/Market/EditMarket";
+import AddCustomBooth from "../Screens/Booth/AddCustomBooth";
+import EditCustomBooth from "../Screens/Booth/EditCustomBooth";
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -47,6 +50,8 @@ export function RootNavigator({
           <Stack.Screen name="EditMarketScreen" options={{presentation: 'modal',
         }} component={EditMarketScreen}
       />
+          <Stack.Screen name="AddBooth" component={AddCustomBooth} options={{presentation: 'modal'}} />
+          <Stack.Screen name="EditCustomBooth" component={EditCustomBooth} options={{presentation: 'modal'}} />
           <Stack.Screen name="MainTabs">
             {(props) => <TabsNavigator {...props} session={session} />}
           </Stack.Screen>
