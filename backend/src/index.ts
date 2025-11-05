@@ -12,12 +12,11 @@ import {
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import PrettyJSON from "@topcli/pretty-json";
-import type { MarketEvent } from "./config/types.ts";
+import type { CustomBooth, MarketEvent } from "./config/types.ts";
 
 dotenv.config();
 const app = express();
 
-// middleware
 // this middleware allows us to send the request body
 // as it parses incoming request bodies that contain JSON payloads
 // without this, if we were to send a JSON payload in a request
@@ -48,7 +47,7 @@ const s3 = new S3Client({
   region: region,
 });
 
-app.get("/api/marketEvent/:userID", async (req, res) => {
+app.get("/api/custom_market/:userID", async (req, res) => {
   const { userID } = req.params;
   console.log(
     "app.get market/userid: retrieving market data from index.ts with userid: ",
@@ -56,7 +55,7 @@ app.get("/api/marketEvent/:userID", async (req, res) => {
   );
   try {
     const getMarkets = await sql`
-        SELECT * FROM marketEvent WHERE user_id = ${userID} ORDER BY startDate DESC`;
+        SELECT * FROM custom_market WHERE user_id = ${userID} ORDER BY startDate DESC`;
     console.log(
       "app.get: markets retrived by user id: ",
       userID,
@@ -86,8 +85,35 @@ app.get("/api/marketEvent/:userID", async (req, res) => {
   }
 });
 
+app.get("/api/custom_booth/:marketID/:userID", async (req, res) => {
+  const { marketID, userID } = req.params;
+  console.log(
+    "app.get booth/marketid: retrieving booth data from index.ts with marketID: ",
+    marketID
+  );
+  try {
+    const getBooths = await sql`
+        SELECT * FROM custom_booth WHERE market_id = ${marketID} AND user_id = ${userID} ORDER BY name ASC`;
+    console.log(
+      "app.get: booths retrived by market id: ",
+      marketID,
+      "booths",
+      PrettyJSON(getBooths)
+    );
+    return res.status(200).json({
+      message: "Successfully fetched booths",
+      booths: getBooths,
+    });
+  } catch (error) {
+    console.log("app.get booth/marketid: error getting booths", error);
+    res.status(500).json({
+      message: `Internal Server Error, could not fetch booths for market: ${marketID}`,
+    });
+  }
+});
+
 app.post(
-  "/api/marketEvent/:userID",
+  "/api/custom_market/:userID",
   upload.single("image"),
   async (req, res) => {
     const { userID } = req.params;
@@ -95,10 +121,10 @@ app.post(
     const key = `user-uploads/${userID}/${req.file?.originalname}`;
 
     console.log(
-      "app.post marketevent/userid: req.body: ",
+      "app.post custom_market/userid: req.body: ",
       JSON.stringify(req.body)
     );
-    console.log("app.post marketevent/userid: req.file: ", req.file);
+    console.log("app.post custom_market/userid: req.file: ", req.file);
     try {
       if (req.file !== undefined) {
         const params: PutObjectCommandInput = {
@@ -110,7 +136,7 @@ app.post(
         const command = new PutObjectCommand(params);
         await s3.send(command);
         const insertMarket = await sql`
-            INSERT INTO marketEvent(user_id, name, startDate, endDate, img_name, img_url)
+            INSERT INTO custom_market(user_id, name, startDate, endDate, img_name, img_url)
             VALUES (${userID}, ${marketName}, ${startDate}, ${endDate}, ${req.file.originalname}, ${img_uri})
             RETURNING *
         `;
@@ -131,8 +157,84 @@ app.post(
   }
 );
 
+app.post("/api/custom_booth/:userID", async (req, res) => {
+  const { userID } = req.params;
+  const { boothName, boothNumber, location, marketId } = req.body;
+
+  console.log(
+    "app.post custom_booth/userid: req.body: ",
+    JSON.stringify(req.body)
+  );
+
+  try {
+    const insertBooth = await sql`
+            INSERT INTO custom_booth(name, number, user_id, market_id, latitude, longitude)
+            VALUES (${boothName}, ${boothNumber}, ${userID}, ${marketId}, ${location?.lat}, ${location?.lng})
+            RETURNING *
+        `;
+    return res.status(201).json({
+      message: "successfully created custom booth",
+      insertBooth,
+    });
+  } catch (error) {
+    console.error("Error inserting booth into table: ", error);
+    return res.status(500).json({
+      message: "internal error, issue inserting booth into table",
+    });
+  }
+});
+
+app.patch("/api/custom_booth/:boothID", async (req, res) => {
+  const { boothID } = req.params;
+  const updates = req.body as Partial<CustomBooth>;
+
+  console.log("app.patch custom_booth updates: ", updates);
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "no fields to update" });
+  }
+
+  //check if booth exists under market
+  const existing =
+    await sql`SELECT * FROM custom_booth WHERE uuid = ${boothID}`;
+  if (existing.length == 0) {
+    return res.status(404).json({ error: "Booth not found" });
+  }
+
+  const setClauses: string[] = [];
+  const values: any[] = [];
+  let i = 1;
+
+  for (const [key, value] of Object.entries(updates)) {
+    setClauses.push(`${key} = $${i}`);
+    if (key != "name") {
+      values.push(Number(value));
+    } else {
+      values.push(value);
+    }
+
+    i++;
+  }
+
+  try {
+    const query = `UPDATE custom_booth 
+    SET ${setClauses.join(", ")}
+    WHERE uuid = ${boothID}
+    RETURNING *`;
+
+    const updateBooth = await sql.query(query, values);
+    return res.status(201).json({
+      message: "app.patch: Booth updated successfully",
+      updatedMarket: updateBooth,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "app.patch custom booth, Internal service error" });
+  }
+});
+
 app.patch(
-  "/api/marketEvent/:marketID/:userID",
+  "/api/custom_market/:marketID/:userID",
   upload.single("image"),
   async (req, res) => {
     const { marketID, userID } = req.params;
@@ -144,7 +246,7 @@ app.patch(
 
     // Check if market exists
     const existing =
-      await sql`SELECT * FROM marketEvent WHERE uuid = ${marketID}`;
+      await sql`SELECT * FROM custom_market WHERE uuid = ${marketID}`;
     if (existing.length === 0) {
       return res.status(404).json({ error: "Market not found" });
     }
@@ -173,12 +275,12 @@ app.patch(
         const command = new PutObjectCommand(params);
         setClauses.push(`img_name = $${i}`);
         values.push(req.file.originalname);
-        i++;  
+        i++;
         await s3.send(command);
       }
 
       const query = `
-    UPDATE MarketEvent
+    UPDATE custom_market
     SET ${setClauses.join(", ")}
     WHERE uuid = ${marketID} AND user_id = ${userID}
     RETURNING *;
@@ -204,27 +306,6 @@ app.get("/", (req, res) => {
   res.send("It's working");
 });
 
-async function initDB() {
-  try {
-    await sql`CREATE TABLE IF NOT EXISTS marketEvent(
-        UUID SERIAL PRIMARY KEY,
-        user_id INT NOT NULL, 
-        name VARCHAR(255) NOT NULL, 
-        startDate DATE NOT NULL,
-        endDate DATE NOT NULL, 
-        img_name VARCHAR(255),
-        img_url VARCHAR(255)
-        )`;
-    console.log("Database initialized successfully");
-  } catch (error) {
-    console.log("Error initializing DB", error);
-    process.exit(1); // statue code 1 means failure, 0 sucess
-  }
-}
-
-initDB().then(() => {
-  console.log("my port: ", PORT);
-  app.listen(PORT, () => {
-    console.log("Server is up and running on PORT: ", PORT);
-  });
+app.listen(PORT, () => {
+  console.log("Server is up and running on PORT: ", PORT);
 });
