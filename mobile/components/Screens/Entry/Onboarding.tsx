@@ -30,7 +30,7 @@ export default function OnboardingScreen(props: OnboardingScreenProps) {
 
   return (
     <ImageBackground
-      source={require("../../assets/onboarding.png")}
+      source={require("../../../assets/onboarding.png")}
       style={styles.background}
       resizeMode="cover"
     >

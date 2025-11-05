@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Button, IconButton, TextInput, Text } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import axios from "axios";
+import { API_BASE_URL } from "../../type";
 
 export default function AddMarketScreen({ navigation }: any) {
   const [marketName, setMarketName] = useState("");
@@ -54,7 +55,7 @@ export default function AddMarketScreen({ navigation }: any) {
       formData.append("img_uri", imageUri ? imageUri : "");
       try {
         const response = await axios.post(
-          "http://192.168.2.173:3000/api/marketEvent/1",
+          `${API_BASE_URL}/api/custom_market/1`,
           formData,
           {
             headers: {

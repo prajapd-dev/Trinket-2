@@ -1,9 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
-import MarketCard from "../MarketCard";
-import AddMarket from "../Buttons/AddMarket";
+import MarketCard from "./MarketCard";
+import AddMarket from "../../Buttons/AddMarket";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { API_BASE_URL } from "../../type";
+import { useMarket } from "../../Contexts/MarketContext";
 
 type MarketFromAPI = {
   uuid: number;
@@ -22,7 +24,11 @@ type ApiResponse = {
 
 
 export default function MarketList({ navigation }: { navigation: any }) {
+
+  // getting setSelectedMarketId to set the selected market when we click on a market card
+  const { setSelectedMarketId } = useMarket();
   const [markets, setMarkets] = useState<MarketFromAPI[]>([]);
+
   function onPressAddMarket() {
     return navigation.navigate("AddMarketScreen", navigation);
   }
@@ -38,7 +44,7 @@ export default function MarketList({ navigation }: { navigation: any }) {
   }
   const fetchMarkets = async () => {
     const { data } = await axios.get<ApiResponse>(
-      "http://192.168.2.173:3000/api/marketEvent/1"
+      `${API_BASE_URL}/custom_market/1`
     );
     const transformed: MarketFromAPI[] = data.markets.map((m) => ({
       ...m,
@@ -51,6 +57,11 @@ export default function MarketList({ navigation }: { navigation: any }) {
     console.log("MarketList: all market data that was fetched ", JSON.stringify(data))
   };
 
+  const navigateToMarketDetails = (marketId: number) => {
+    // market has been selecreted, set it in context
+    setSelectedMarketId(marketId);
+    navigation.navigate("MainTabs", { screen: "Booth List" });
+  }
   useFocusEffect(
     useCallback(() => {
       fetchMarkets(); // re-fetch whenever you navigate back here
@@ -66,7 +77,7 @@ export default function MarketList({ navigation }: { navigation: any }) {
         image={m.img_url}
         startDate={m.startdate}
         endDate={m.enddate}
-        onPress={() => navigation.navigate("MainTabs", { screen: "Account" })}
+        onPress={() => navigateToMarketDetails(m.uuid)}
         onEditPress={() => onPressEditMarket(m)}
         />
       )): <Text> No Markets Found</Text>}
@@ -77,15 +88,12 @@ export default function MarketList({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 40,
+    marginTop: 60,
     padding: 12,
   },
   verticallySpaced: {
     paddingTop: 4,
     paddingBottom: 4,
     alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
-  },
+  }
 });
