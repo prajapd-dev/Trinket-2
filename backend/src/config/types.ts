@@ -6,3 +6,10 @@ export interface MarketEvent {
     img_name: string;
     img_url: string | null;
 }
+
+export interface CustomBooth {
+    name: string, 
+    number: number, 
+    latitude: number,
+    longitude: number
+}
