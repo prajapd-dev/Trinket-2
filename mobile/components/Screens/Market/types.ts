@@ -1,4 +1,4 @@
-export interface MarketData {
+export interface MarketDataGet {
   enddate: Date;
   img_name: string;
   img_url: string;
@@ -9,7 +9,7 @@ export interface MarketData {
 }
 
 export interface APIResponseGetMarket {
-  markets: MarketData[];
+  markets: MarketDataGet[];
   message: string;
   success: boolean;
 }
@@ -26,4 +26,11 @@ export interface MarketDataSendToBooth {
   marketEndDate: Date, 
   marketName: string, 
   marketStartDate: Date
+}
+
+export interface MarketDataPost {
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  imgUri?: string; 
 }
