@@ -30,7 +30,7 @@ export interface MarketDataSendToBooth {
 
 export interface MarketDataPost {
   name: string;
-  startDate: Date;
-  endDate: Date;
-  imgUri?: string; 
+  startdate: Date;
+  enddate: Date;
+  img_url?: string | null; 
 }
