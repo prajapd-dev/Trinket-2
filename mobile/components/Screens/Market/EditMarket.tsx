@@ -20,7 +20,7 @@ import { API_BASE_URL } from "../../type";
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
 export default function EditMarketScreen({ route, navigation }: Props) {
-  const { marketUUID, marketNameCurr, startDateCurr, endDateCurr, imgUriCurr } =
+  const { imgUriCurr, marketNameCurr, marketUuid, startDateCurr, endDateCurr }  =
     route.params;
   const [marketName, setMarketName] = useState(marketNameCurr);
   const [startDate, setStartDate] = useState<Date | null>(startDateCurr);
@@ -90,7 +90,7 @@ export default function EditMarketScreen({ route, navigation }: Props) {
         JSON.stringify(formData)
       );
       const response = await axios.patch(
-        `${API_BASE_URL}/custom_market/${marketUUID}/1`,
+        `${API_BASE_URL}/custom_market/${marketUuid}/1`,
         formData,
         {
           headers: {
