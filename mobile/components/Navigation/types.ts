@@ -2,6 +2,7 @@
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { MarketDataCurr, MarketDataSendToBooth } from "../Screens/Market/types";
 
 // Root stack routes (your main app flow)
 export type RootStackParamList = {
@@ -11,13 +12,7 @@ export type RootStackParamList = {
   MarketList: undefined;
   MainTabs: undefined;
   AddMarketScreen: undefined;
-  EditMarketScreen: {
-    marketUUID: number;
-    marketNameCurr: string;
-    startDateCurr: Date;
-    endDateCurr: Date;
-    imgUriCurr: any;
-  };
+  EditMarketScreen: MarketDataCurr;
   AddBooth: undefined;
   EditCustomBooth: undefined;
 };
@@ -26,7 +21,7 @@ export type RootStackParamList = {
 export type TabsParamList = {
   // 'Add Item': undefined;
   Account: undefined;
-  "View Booths": undefined;
+  "View Booths": MarketDataSendToBooth;
 };
 
 // Example: Navigation prop type for the Account screen
