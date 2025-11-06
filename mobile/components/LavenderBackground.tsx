@@ -32,8 +32,9 @@ export default function LavenderBackground() {
     Array.from({ length: 40 }).map(() => {
       const baseX = Math.random() * width;
       const baseY = Math.random() * height;
-    
-const size = Math.random() < 0.4 ? Math.random() * 40 + 25 : Math.random() * 20 + 8;
+
+      const size =
+        Math.random() < 0.4 ? Math.random() * 40 + 25 : Math.random() * 20 + 8;
       const opacity = Math.random() * 0.5 + 0.2;
 
       return {
@@ -130,7 +131,9 @@ const size = Math.random() < 0.4 ? Math.random() * 40 + 25 : Math.random() * 20 
 
 const styles = StyleSheet.create({
   container: {
+    ...StyleSheet.absoluteFillObject,
     flex: 1,
+    position: "absolute",
     backgroundColor: "#E6E6FA",
   },
   diamond: {
