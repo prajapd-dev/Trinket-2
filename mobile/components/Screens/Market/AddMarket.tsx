@@ -44,9 +44,9 @@ export default function AddMarketScreen({ navigation }: any) {
     try {
       const marketData: MarketDataPost = {
         name: marketName, 
-        startDate: startDate, 
-        endDate: endDate, 
-        imgUri: imageUri? imageUri : ""
+        startdate: startDate, 
+        enddate: endDate, 
+        img_url: imageUri? imageUri : ""
       }
       await createMarket(1, marketData, imgData)
     } catch (error) {

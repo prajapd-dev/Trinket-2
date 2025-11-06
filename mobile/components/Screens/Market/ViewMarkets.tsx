@@ -2,7 +2,6 @@ import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import MarketCard from "./MarketCard";
 import AddMarket from "../../Buttons/AddMarket";
-import axios from "axios";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useMarket } from "../../Contexts/MarketContext";
@@ -53,7 +52,7 @@ export default function ViewMarkets({ navigation }: { navigation: any }) {
     useCallback(() => {
       (async () => {
         // will need to update with user_id once we get there
-        const fetched = await getMarkets(1); 
+        const fetched: MarketDataGet[] = await getMarkets(1); 
         setMarkets(fetched)
       })()
     }, [])
