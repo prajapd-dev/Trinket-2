@@ -120,7 +120,7 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     const { userID } = req.params;
-    const { marketName, startDate, endDate, img_uri } = req.body;
+    const { name, startdate, enddate, img_url } = req.body;
     const key = `user-uploads/${userID}/${req.file?.originalname}`;
 
     console.log(
@@ -139,8 +139,8 @@ app.post(
         const command = new PutObjectCommand(params);
         await s3.send(command);
         const insertMarket = await sql`
-            INSERT INTO custom_market(user_id, name, startDate, endDate, img_name, img_url)
-            VALUES (${userID}, ${marketName}, ${startDate}, ${endDate}, ${req.file.originalname}, ${img_uri})
+            INSERT INTO custom_market(user_id, name, startdate, enddate, img_name, img_url)
+            VALUES (${userID}, ${name}, ${startdate}, ${enddate}, ${req.file.originalname}, ${img_url})
             RETURNING *
         `;
         return res.status(201).json({
@@ -239,11 +239,13 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
 });
 
 app.patch(
-  "/api/custom_market/:marketID/:userID",
+  "/api/custom_market/:market_uuid/:user_id",
   upload.single("image"),
   async (req, res) => {
-    const { marketID, userID } = req.params;
+    const { market_uuid, user_id } = req.params;
     const updates = req.body as Partial<MarketEvent>; // may contain any subset of fields
+
+      console.log("app.patch custom_market updates: ", updates);
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: "No fields to update" });
@@ -251,7 +253,7 @@ app.patch(
 
     // Check if market exists
     const existing =
-      await sql`SELECT * FROM custom_market WHERE uuid = ${marketID}`;
+      await sql`SELECT * FROM custom_market WHERE uuid = ${market_uuid}`;
     if (existing.length === 0) {
       return res.status(404).json({ error: "Market not found" });
     }
@@ -269,7 +271,7 @@ app.patch(
     try {
       if (req.file !== undefined) {
         console.log("app.patch: uploading new image to S3");
-        const key = `user-uploads/${userID}/${req.file?.originalname}`;
+        const key = `user-uploads/${user_id}/${req.file?.originalname}`;
         const params: PutObjectCommandInput = {
           Bucket: bucketName,
           Key: key,
@@ -287,7 +289,7 @@ app.patch(
       const query = `
     UPDATE custom_market
     SET ${setClauses.join(", ")}
-    WHERE uuid = ${marketID} AND user_id = ${userID}
+    WHERE uuid = ${market_uuid} AND user_id = ${user_id}
     RETURNING *;
   `;
 
