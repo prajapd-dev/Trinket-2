@@ -2,7 +2,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types";
 import Auth from "../Auth/Auth";
-import MarketList from "../Screens/Market/MarketList";
+import ViewMarkets from "../Screens/Market/ViewMarkets";
 import TabsNavigator from "./TabNavigator";
 import OnboardingScreen from "../Screens/Entry/Onboarding";
 import EmailVerification from "../Auth/EmailVerification";
@@ -43,7 +43,7 @@ export function RootNavigator({
       {/* Market list is the “landing page” for logged-in users */}
       {session && (
         <>
-          <Stack.Screen name="MarketList" component={MarketList} />
+          <Stack.Screen name="MarketList" component={ViewMarkets} />
           <Stack.Screen name="AddMarketScreen" options={{presentation: 'modal',
         }} component={AddMarketScreen}
       />

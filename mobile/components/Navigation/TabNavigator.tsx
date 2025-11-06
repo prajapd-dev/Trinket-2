@@ -2,7 +2,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TabsParamList } from "./types";
 import Account from "../Screens/Account";
-import BoothList from "../Screens/Booth/BoothList";
+import ViewBooths from "../Screens/Booth/ViewBooths";
 import { IconButton } from "react-native-paper";
 
 const Tab = createBottomTabNavigator<TabsParamList>();
@@ -21,7 +21,7 @@ export default function TabsNavigator({ session }: any) {
           },
         }}
       >
-        {(props) => <BoothList {...props} />}
+        {(props) => <ViewBooths {...props} />}
       </Tab.Screen>
       <Tab.Screen name="Account">
         {(props) =>
