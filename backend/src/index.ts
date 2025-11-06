@@ -47,24 +47,24 @@ const s3 = new S3Client({
   region: region,
 });
 
-app.get("/api/custom_market/:userID", async (req, res) => {
-  const { userID } = req.params;
+app.get("/api/custom_market/:user_id", async (req, res) => {
+  const { user_id } = req.params;
   console.log(
     "app.get market/userid: retrieving market data from index.ts with userid: ",
-    userID
+    user_id
   );
   try {
     const getMarkets = await sql`
-        SELECT * FROM custom_market WHERE user_id = ${userID} ORDER BY startDate DESC`;
+        SELECT * FROM custom_market WHERE user_id = ${user_id} ORDER BY startDate DESC`;
     console.log(
       "app.get: markets retrived by user id: ",
-      userID,
+      user_id,
       "markets",
       PrettyJSON(getMarkets)
     );
 
     for (const market of getMarkets) {
-      const key = `user-uploads/${userID}/${market.img_name}`;
+      const key = `user-uploads/${user_id}/${market.img_name}`;
       const getObjectParams = {
         Bucket: bucketName,
         Key: key,
@@ -74,13 +74,16 @@ app.get("/api/custom_market/:userID", async (req, res) => {
       market.img_url = url;
     }
     return res.status(200).json({
-      message: "Successfully fetched markets",
       markets: getMarkets,
+      message: "app.get market/user_id: Successfully fetched markets",
+      success: true,
     });
   } catch (error) {
-    console.log("app.get market/userid: error getting market event", error);
+    console.log("app.get market/user_id: error getting market event", error);
     res.status(500).json({
-      message: `Internal Server Error, could not fetch market events made by user: ${userID}`,
+      markets: [],
+      message: `app.get market/user_id: Internal Server Error, could not fetch market events made by user: ${user_id}`,
+      success: false,
     });
   }
 });
@@ -204,6 +207,8 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
   const values: any[] = [];
   let i = 1;
 
+  // because we are creating the key values for the sql statement, it is 
+  // important that the key matches the column name in the db
   for (const [key, value] of Object.entries(updates)) {
     setClauses.push(`${key} = $${i}`);
     if (key != "name") {
