@@ -5,47 +5,25 @@ import AddMarket from "../../Buttons/AddMarket";
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { API_BASE_URL } from "../../type";
 import { useMarket } from "../../Contexts/MarketContext";
 import {
-  MarketData,
-  APIResponseGetMarket,
+  MarketDataGet,
   MarketDataCurr,
   MarketDataSendToBooth,
 } from "./types";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import LavenderBackground from "../../LavenderBackground";
+import { getMarkets } from "../../../api/markets";
 
 export default function ViewMarkets({ navigation }: { navigation: any }) {
   const { setSelectedMarketId } = useMarket();
-  const [markets, setMarkets] = useState<MarketData[]>([]);
-
-  const fetchMarkets = async () => {
-    const { data } = await axios.get<APIResponseGetMarket>(
-      `${API_BASE_URL}/custom_market/1`
-    );
-
-    if (data.success) {
-      const transformed: MarketData[] = data.markets.map((m) => ({
-        ...m,
-        startdate: new Date(m.startdate),
-        enddate: new Date(m.enddate),
-      }));
-
-      transformed.sort((a, b) => a.startdate.getTime() - b.startdate.getTime());
-      setMarkets(transformed);
-      console.log(
-        "MarketList: all market data that was fetched",
-        JSON.stringify(data)
-      );
-    }
-  };
-
+  const [markets, setMarkets] = useState<MarketDataGet[]>([]);
+  
   const onPressAddMarket = () => {
     navigation.navigate("AddMarketScreen", navigation);
   };
 
-  const onPressEditMarket = (market: MarketData) => {
+  const onPressEditMarket = (market: MarketDataGet) => {
     const sendToEditScreenData: MarketDataCurr = {
       endDateCurr: market.enddate,
       imgUriCurr: market.img_url,
@@ -61,16 +39,6 @@ export default function ViewMarkets({ navigation }: { navigation: any }) {
     market: MarketDataSendToBooth
   ) => {
     setSelectedMarketId(marketId);
-    console.log(
-      "marketEndDate: ",
-      market.marketEndDate,
-      "marketID: ",
-      marketId,
-      "marketName: ",
-      market.marketName,
-      "marketStartDate: ",
-      market.marketStartDate
-    );
     navigation.navigate("MainTabs", {
       screen: "View Booths",
       params: {
@@ -83,7 +51,11 @@ export default function ViewMarkets({ navigation }: { navigation: any }) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchMarkets();
+      (async () => {
+        // will need to update with user_id once we get there
+        const fetched = await getMarkets(1); 
+        setMarkets(fetched)
+      })()
     }, [])
   );
 
