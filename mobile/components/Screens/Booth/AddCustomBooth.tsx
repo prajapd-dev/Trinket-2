@@ -4,7 +4,7 @@ import { Button, IconButton, TextInput, Text } from "react-native-paper";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
-import { API_BASE_URL } from "../../type";
+import { API_BASE_URL } from "../../../type/type";
 import { useMarket } from "../../Contexts/MarketContext";
 
 export default function AddCustomBooth({ navigation }: { navigation: any }) {

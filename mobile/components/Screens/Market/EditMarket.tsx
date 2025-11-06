@@ -15,7 +15,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../Navigation/types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
-import { API_BASE_URL } from "../../type";
+import { API_BASE_URL } from "../../../type/type";
 
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 

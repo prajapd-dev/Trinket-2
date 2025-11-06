@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL } from "../../type";
+import { API_BASE_URL } from "../../../type/type";
 import { Text } from "react-native-paper";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
