@@ -14,6 +14,7 @@ import { Button, IconButton, TextInput, Text } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import axios from "axios";
 import { API_BASE_URL } from "../../type";
+import LavenderBackground from "../../LavenderBackground";
 
 export default function AddMarketScreen({ navigation }: any) {
   const [marketName, setMarketName] = useState("");
@@ -55,7 +56,7 @@ export default function AddMarketScreen({ navigation }: any) {
       formData.append("img_uri", imageUri ? imageUri : "");
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/api/custom_market/1`,
+          `${API_BASE_URL}/custom_market/1`,
           formData,
           {
             headers: {
@@ -91,6 +92,7 @@ export default function AddMarketScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <LavenderBackground />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -121,7 +123,7 @@ export default function AddMarketScreen({ navigation }: any) {
           <Button
             mode="outlined"
             onPress={() => setStartPickerVisible(true)}
-            style={styles.input}
+            style={[styles.input, {backgroundColor: "#fff"}]}
           >
             {startDate ? startDate.toDateString() : "Select Start Date"}
           </Button>
@@ -139,7 +141,7 @@ export default function AddMarketScreen({ navigation }: any) {
           <Button
             mode="outlined"
             onPress={() => setEndPickerVisible(true)}
-            style={styles.input}
+            style={[styles.input, {backgroundColor: "#fff"}]}
           >
             {endDate ? endDate.toDateString() : "Select End Date"}
           </Button>
@@ -176,21 +178,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
-    backgroundColor: "#fff",
   },
   backButton: {
-  width: 50,                // bigger circle
-  height: 50,
-  borderRadius: 25,         // perfect circle
-  backgroundColor: "#d2ceceff",  // grey background
-  justifyContent: "center",
-  alignItems: "center",
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.15,
-  shadowRadius: 4,
-  elevation: 4,             // Android shadow
-},
+    width: 50, // bigger circle
+    height: 50,
+    borderRadius: 25, // perfect circle
+    backgroundColor: "#d2ceceff", // grey background
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4, // Android shadow
+  },
   header: {
     position: "absolute",
     top: Platform.OS === "ios" ? 50 : 24, // top-left
