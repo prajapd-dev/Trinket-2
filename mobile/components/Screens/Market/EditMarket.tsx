@@ -14,8 +14,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../Navigation/types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from "axios";
-import { API_BASE_URL } from "../../../type/type";
+import { MarketDataPost } from "./types";
+import { updateMarket } from "../../../api/markets";
 
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
@@ -37,69 +37,17 @@ export default function EditMarketScreen({ route, navigation }: Props) {
       return;
     }
 
-    console.log(
-      "EditMarket submission: marketName: ",
-      marketName,
-      " startDate: ",
-      startDate,
-      " endDate: ",
-      endDate,
-      " img_url: ",
-      imageUri
-    );
-
-    console.log(
-      "EditMarket original values - marketNameCurr: ",
-      marketNameCurr,
-      " startDateCurr: ",
-      startDateCurr,
-      " endDateCurr: ",
-      endDateCurr,
-      " imgUriCurr: ",
-      imgUriCurr
-    );
-    const formData = new FormData();
-
-    if (imgData != null && imgData.assets != null) {
-      console.log(
-        "EditMarket: preparing to upload image with data: ",
-        JSON.stringify(imgData)
-      );
-      const file = {
-        uri: imgData.assets[0].uri,
-        type: imgData.assets[0].mimeType,
-        name: imgData.assets[0].fileName,
-      };
-      formData.append("image", file as any);
-    }
-    if (marketNameCurr !== marketName) {
-      formData.append("name", marketName);
-    }
-    if (startDateCurr !== startDate) {
-      formData.append("startdate", startDate.toISOString());
-    }
-    if (endDateCurr !== endDate) {
-      formData.append("enddate", endDate.toISOString());
-    }
-    if (imgUriCurr !== imageUri) {
-      formData.append("img_url", imageUri ? imageUri : "");
-    }
+  const updates: Partial<MarketDataPost> = {}
+  if(marketNameCurr != marketName) updates.name = marketName; 
+  if(startDateCurr != startDate) updates.startdate = startDate; 
+  if(endDateCurr != endDate) updates.enddate = endDate; 
+  if(imgUriCurr != imageUri) updates.img_url = imageUri
     try {
       console.log(
-        "EditMarket: formData to be sent: ",
-        JSON.stringify(formData)
+        "EditMarket: updates to be sent: ", updates, "imgdata: ", imgData
+        
       );
-      const response = await axios.patch(
-        `${API_BASE_URL}/custom_market/${marketUuid}/1`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      console.log("EditMarket submission response: ", JSON.stringify(response));
-      setImageUri(response.data.downloadUrl);
+      await updateMarket(1, marketUuid, updates, imgData)
     } catch (error) {
       console.log("EditMarket error from submission: ", error);
     }
