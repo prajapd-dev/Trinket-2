@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../../type/type";
 import { Text } from "react-native-paper";
-import { StyleSheet, View, ScrollView } from "react-native";
+import { Image, StyleSheet, View, ScrollView } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import CustomBoothCard from "./CustomBoothCard";
@@ -89,17 +89,22 @@ export default function ViewBooths({ route, navigation }: any) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea}>
-        <LavenderBackground />
+        {/* Only render LavenderBackground if there are markets */}
+        {booths.length > 0 && <LavenderBackground />}
         <AddBooth onPressAddBooth={onPressAddBooth} />
         <View style={styles.row}>
-          <Text style={styles.marketName}>{marketName}</Text>
+          <Text style={styles.boothName}>{marketName}</Text>
 
           <Text style={styles.dateRange}>
             {marketStartDate.toDateString()} - {marketEndDate.toDateString()}
           </Text>
         </View>
-
-        <ScrollView>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContainer,
+            booths.length === 0 && styles.scrollEmptyContainer,
+          ]}
+        >
           {
             /* Render booth cards here when data is fetched */
             booths.length > 0 ? (
@@ -125,7 +130,16 @@ export default function ViewBooths({ route, navigation }: any) {
                 </View>
               ))
             ) : (
-              <Text>No Booths Found</Text>
+              <>
+                <Image
+                  style={styles.emptyImage}
+                  source={require("../../../assets/booth.png")}
+                />
+                <Text style={styles.boothEmptyText}>No Markets</Text>
+                <Text style={styles.boothEmptyBodyText}>
+                  You haven't added any booths yet.
+                </Text>
+              </>
             )
           }
         </ScrollView>
@@ -145,7 +159,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // pushes title left, dates right
     alignItems: "center", // vertically centers them
   },
-  marketName: {
+  boothName: {
     fontWeight: "bold",
     fontSize: 18,
     color: "#4B0082",
@@ -156,6 +170,34 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-     padding: 10,
+    padding: 10,
+  },
+  scrollContainer: {
+    padding: 12,
+  },
+  scrollEmptyContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 30,
+  },
+  emptyImage: {
+    width: 300,
+    height: 300,
+    marginBottom: 20,
+  },
+  boothEmptyText: {
+    fontSize: 30,
+    fontFamily: "Verdana",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  boothEmptyBodyText: {
+    fontSize: 20,
+    lineHeight: 30,
+    fontFamily: "Verdana",
+    color: "#808080",
+    textAlign: "center",
+    marginTop: 10,
   },
 });
