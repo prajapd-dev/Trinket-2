@@ -41,7 +41,7 @@ export default function CustomBoothCard({
           ) : (
             <View style={styles.placeholder}>
               <Text variant="bodyMedium" style={styles.placeholderText}>
-                No Image
+               Add a Trinket!
               </Text>
             </View>
           )}
