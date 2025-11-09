@@ -4,6 +4,7 @@ import { TabsParamList } from "./types";
 import Account from "../Screens/Account";
 import ViewBooths from "../Screens/Booth/ViewBooths";
 import { IconButton } from "react-native-paper";
+import ViewItems from "../Screens/Item/ViewItems";
 
 const Tab = createBottomTabNavigator<TabsParamList>();
 
@@ -30,6 +31,7 @@ export default function TabsNavigator({ session }: any) {
           ) : null
         }
       </Tab.Screen>
+      <Tab.Screen name="View Items" component={ViewItems} options={{headerShown: false}} />
     </Tab.Navigator>
   );
 }

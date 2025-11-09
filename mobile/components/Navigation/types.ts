@@ -22,6 +22,7 @@ export type TabsParamList = {
   // 'Add Item': undefined;
   Account: undefined;
   "View Booths": MarketDataSendToBooth;
+  "View Items": undefined;
 };
 
 // Example: Navigation prop type for the Account screen
