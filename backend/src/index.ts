@@ -233,7 +233,7 @@ app.patch("/api/custom_booth/:booth_uuid", async (req, res) => {
   try {
     const query = `UPDATE custom_booth 
     SET ${setClauses.join(", ")}
-    WHERE uuid = ${booth_uuid}
+    WHERE uuid = '${booth_uuid}'
     RETURNING *`;
 
     const updateBooth = await sql.query(query, values);
@@ -241,10 +241,10 @@ app.patch("/api/custom_booth/:booth_uuid", async (req, res) => {
       message: "app.patch: Booth updated successfully",
       updatedMarket: updateBooth,
     });
-  } catch (error) {
+  } catch (error: any) {
     return res
       .status(500)
-      .json({ error: "app.patch custom booth, Internal service error" });
+      .json({ error: error.message });
   }
 });
 
