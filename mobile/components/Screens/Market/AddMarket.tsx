@@ -43,32 +43,45 @@ export default function AddMarketScreen({ navigation }: any) {
     );
     try {
       const marketData: MarketDataPost = {
-        name: marketName, 
-        startdate: startDate, 
-        enddate: endDate, 
-        img_url: imageUri? imageUri : ""
-      }
-      await createMarket(1, marketData, imgData)
+        name: marketName,
+        startdate: startDate,
+        enddate: endDate,
+      };
+      await createMarket(
+        "123e4567-e89b-12d3-a456-426655440000",
+        marketData,
+        imgData
+      );
     } catch (error) {
-      console.log("Add market error from submission:", error)
+      console.log("AddMarket: error from submission:", error);
     }
     navigation.goBack({ state: { reload: true } });
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    setImageData(result);
-    console.log("AddMarket: result of img upload:", JSON.stringify(result));
+const pickImage = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 1,
+  });
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
-    }
-  };
+  console.log("AddMarket: result of img upload:", JSON.stringify(result));
+
+  // If the user canceled, clear image state and return early
+  if (result.canceled) {
+    setImageUri(null);
+    setImageData(null);
+    return;
+  }
+
+  // Otherwise, update with the selected image
+  if (result.assets && result.assets.length > 0) {
+    setImageUri(result.assets[0].uri);
+    setImageData(result);
+  }
+};
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -103,7 +116,7 @@ export default function AddMarketScreen({ navigation }: any) {
           <Button
             mode="outlined"
             onPress={() => setStartPickerVisible(true)}
-            style={[styles.input, {backgroundColor: "#fff"}]}
+            style={[styles.input, { backgroundColor: "#fff" }]}
           >
             {startDate ? startDate.toDateString() : "Select Start Date"}
           </Button>
@@ -121,7 +134,7 @@ export default function AddMarketScreen({ navigation }: any) {
           <Button
             mode="outlined"
             onPress={() => setEndPickerVisible(true)}
-            style={[styles.input, {backgroundColor: "#fff"}]}
+            style={[styles.input, { backgroundColor: "#fff" }]}
           >
             {endDate ? endDate.toDateString() : "Select End Date"}
           </Button>

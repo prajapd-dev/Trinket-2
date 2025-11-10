@@ -20,7 +20,7 @@ import { updateMarket } from "../../../api/markets";
 type Props = NativeStackScreenProps<RootStackParamList, "EditMarketScreen">;
 
 export default function EditMarketScreen({ route, navigation }: Props) {
-  const { imgUriCurr, marketNameCurr, marketUuid, startDateCurr, endDateCurr }  =
+  const { imgUriCurr, marketNameCurr, marketUuid, startDateCurr, endDateCurr } =
     route.params;
   const [marketName, setMarketName] = useState(marketNameCurr);
   const [startDate, setStartDate] = useState<Date | null>(startDateCurr);
@@ -37,19 +37,38 @@ export default function EditMarketScreen({ route, navigation }: Props) {
       return;
     }
 
-  const updates: Partial<MarketDataPost> = {}
-  if(marketNameCurr != marketName) updates.name = marketName; 
-  if(startDateCurr != startDate) updates.startdate = startDate; 
-  if(endDateCurr != endDate) updates.enddate = endDate; 
-  if(imgUriCurr != imageUri) updates.img_url = imageUri
+    const updates: Partial<MarketDataPost> = {};
+    if (marketNameCurr != marketName) updates.name = marketName;
+    if (startDateCurr != startDate) updates.startdate = startDate;
+    if (endDateCurr != endDate) updates.enddate = endDate;
+    // need this so that the update key in patch is not empty
+    if (imgData && imgData.assets && imgData.assets[0].fileName) updates.img_name = imgData.assets[0].fileName;
     try {
       console.log(
-        "EditMarket: updates to be sent: ", updates, "imgdata: ", imgData
-        
+        "EditMarket: updates to be sent: ",
+        updates,
+        "imgdata: ",
+        imgData
       );
-      await updateMarket(1, marketUuid, updates, imgData)
-    } catch (error) {
-      console.log("EditMarket error from submission: ", error);
+      const res = await updateMarket(
+        "123e4567-e89b-12d3-a456-426655440000",
+        marketUuid,
+        updates,
+        imgData
+      );
+      console.log("EditMarket sucessful res:", res);
+    } catch (error: any) {
+      if (error.response) {
+        // Server responded with a status outside 2xx
+        console.log("EditMarket: Status code:", error.response.status);
+        console.log("EditMarket: Error message from server:", error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        console.log("EditMarket: No response received:", error.request);
+      } else {
+        // Something else went wrong
+        console.log("EditMarket: rror setting up request:", error.message);
+      }
     }
     navigation.goBack();
   };
@@ -78,13 +97,13 @@ export default function EditMarketScreen({ route, navigation }: Props) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.header}>
-            <View style={styles.backButton}>
+          <View style={styles.backButton}>
             <IconButton
               icon="arrow-left"
               size={28}
               onPress={() => navigation.goBack()}
             />
-            </View>
+          </View>
         </View>
         <View style={styles.form}>
           <Text variant="headlineMedium" style={styles.title}>
@@ -111,7 +130,13 @@ export default function EditMarketScreen({ route, navigation }: Props) {
             mode="date"
             minimumDate={new Date()}
             onConfirm={(date: Date) => {
-              setStartDate(date);
+              // Keep only year, month, day, ignore time
+              const normalizedDate = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              );
+              setStartDate(normalizedDate);
               setStartPickerVisible(false);
             }}
             onCancel={() => setStartPickerVisible(false)}
@@ -129,7 +154,12 @@ export default function EditMarketScreen({ route, navigation }: Props) {
             mode="date"
             minimumDate={startDate ? startDate : new Date()}
             onConfirm={(date: Date) => {
-              setEndDate(date);
+              const normalizedDate = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              );
+              setEndDate(normalizedDate);
               setEndPickerVisible(false);
             }}
             onCancel={() => setEndPickerVisible(false)}

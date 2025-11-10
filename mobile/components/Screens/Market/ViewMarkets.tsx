@@ -15,7 +15,7 @@ import LavenderBackground from "../../LavenderBackground";
 import { getMarkets } from "../../../api/markets";
 
 export default function ViewMarkets({ navigation }: { navigation: any }) {
-  const { setSelectedMarketId } = useMarket();
+  const { setSelectedMarketUuid: setSelectedMarketId } = useMarket();
   const [markets, setMarkets] = useState<MarketDataGet[]>([]);
   
   const onPressAddMarket = () => {
@@ -34,10 +34,10 @@ export default function ViewMarkets({ navigation }: { navigation: any }) {
   };
 
   const navigateToMarketDetails = (
-    marketId: number,
+    market_uuid: string,
     market: MarketDataSendToBooth
   ) => {
-    setSelectedMarketId(marketId);
+    setSelectedMarketId(market_uuid);
     navigation.navigate("MainTabs", {
       screen: "View Booths",
       params: {
@@ -52,8 +52,9 @@ export default function ViewMarkets({ navigation }: { navigation: any }) {
     useCallback(() => {
       (async () => {
         // will need to update with user_id once we get there
-        const fetched: MarketDataGet[] = await getMarkets(1); 
+        const fetched: MarketDataGet[] = await getMarkets("123e4567-e89b-12d3-a456-426655440000"); 
         setMarkets(fetched)
+        console.log("ViewMarkets: fetched markets:", fetched)
       })()
     }, [])
   );

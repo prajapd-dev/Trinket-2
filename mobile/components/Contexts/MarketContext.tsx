@@ -1,25 +1,26 @@
 import { createContext, useContext, useState, useMemo } from "react";
 type MarketContextType = {
-  selectedMarketId: number | null;
-  setSelectedMarketId: (id: number | null) => void;
+  selectedMarketUuid: string | null;
+  setSelectedMarketUuid: (id: string | null) => void;
 };
 
 const MarketContext = createContext<MarketContextType | undefined>(undefined);
 
 export function MarketProvider({ children }: { children: any }) {
-  const [selectedMarketId, setSelectedMarketId] = useState<number | null>(null); //this is the bucket content
+  const [selectedMarketUuid, setSelectedMarketUuid] = useState<string | null>(null); //this is the bucket content
 
   // useMemo is used to ensure the provided object identity only changes when selectedMarketId changes
   // which limits re-renders of consuming components
   const value = useMemo(
-    () => ({ selectedMarketId, setSelectedMarketId }),
-    [selectedMarketId]
+    () => ({ selectedMarketUuid, setSelectedMarketUuid }),
+    [selectedMarketUuid]
   );
   return (
     <MarketContext.Provider value={value}>{children}</MarketContext.Provider>
   );
 }
 
+//this is how we access the bucket content
 export const useMarket = (): MarketContextType => {
   const context = useContext(MarketContext);
   // throw an error if useMarket is used outside of MarketProvider
