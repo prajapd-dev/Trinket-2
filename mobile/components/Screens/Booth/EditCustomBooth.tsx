@@ -16,7 +16,7 @@ export default function EditCustomBooth({
   navigation: any;
 }) {
   const {
-    boothUuid,
+    booth_uuid,
     boothNameCurr,
     boothNumberCurr,
     boothLatCurr,
@@ -33,7 +33,7 @@ export default function EditCustomBooth({
   const [boothName, setBoothName] = useState(boothNameCurr || "");
   const [loading, setLoading] = useState(false);
   // using the market context to get the selected market id
-  const { selectedMarketId } = useMarket();
+  const { selectedMarketUuid: selectedMarketId } = useMarket();
   const marketId = selectedMarketId;
 
   // okay so when i send this, we should have the market id ... from somewhere and then the
@@ -43,22 +43,17 @@ export default function EditCustomBooth({
   const addLocation = async () => {
     setLoading(true);
     try {
-      console.log("Requesting location permission...");
+      console.log("EditCustomBooth: Requesting location permission...");
       const { status } = await Location.requestForegroundPermissionsAsync();
       console.log("Location permission status: ", status);
       if (status !== "granted") {
-        console.log("Location permission denied.");
-        Alert.alert("Permission denied", "Location access is required.");
+        console.log("EditCustomBooth: Location permission denied.");
+        Alert.alert("EditCustomBooth: Permission denied", "Location access is required.");
         return;
       }
 
       const loc = await Location.getCurrentPositionAsync({});
       setLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-      console.log(
-        "Location obtained: ",
-        loc.coords.latitude,
-        loc.coords.longitude
-      );
     } catch (error) {
       console.error("Error getting location: ", error);
     } finally {
@@ -101,15 +96,12 @@ export default function EditCustomBooth({
   const handleSubmit = async () => {
     console.log("EditCustomBooth - handleSubmit clicked");
     if (String(boothNumber).trim() === "") {
-        console.log("in booth number")
       Alert.alert("Validation Error", "Booth Number cannot be empty.");
       return;
     } else if (boothName.trim() == "") {
-        console.log("in booth name")
       Alert.alert("Validation error", "Booth Name cannot be empty.");
       return;
     }
-    console.log("over here!")
     const updates: Partial<{
       name: string;
       number: number;
@@ -124,12 +116,11 @@ export default function EditCustomBooth({
       updates.longitude = location?.lng ? location.lng : 0;
     }
 
-    console.log("Submitting updates: ", updates);
+    console.log("EditCustomBooth: Submitting updates: ", updates);
 
     try {
-      console.log("inside try catch block");
       const response = await axios.patch(
-        `${API_BASE_URL}/custom_booth/${boothUuid}`,
+        `${API_BASE_URL}/custom_booth/${booth_uuid}`,
         updates,
         { headers: { "Content-Type": "application/json" } }
       );

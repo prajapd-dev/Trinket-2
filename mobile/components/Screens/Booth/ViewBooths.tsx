@@ -11,7 +11,7 @@ import LavenderBackground from "../../LavenderBackground";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 type ViewBoothsFromAPI = {
-  uuid: number;
+  uuid: string;
   name: string;
   number: number;
   market_id: number;
@@ -27,7 +27,7 @@ type ApiResponse = {
 
 export default function ViewBooths({ route, navigation }: any) {
   const { marketEndDate, marketName, marketStartDate } = route.params;
-  const { selectedMarketId } = useMarket();
+  const { selectedMarketUuid: market_uuid } = useMarket();
   const [booths, setBooths] = useState<ViewBoothsFromAPI[]>([]);
 
   const onPressAddBooth = () => {
@@ -37,7 +37,7 @@ export default function ViewBooths({ route, navigation }: any) {
   const fetchBooths = async () => {
     console.log("ViewBooths: Fetching booths from API...");
     const { data } = await axios.get<ApiResponse>(
-      `${API_BASE_URL}/custom_booth/${selectedMarketId}/1`
+      `${API_BASE_URL}/custom_booth/${market_uuid}/123e4567-e89b-12d3-a456-426655440000`
     );
     console.log(
       "ViewBooths: all booth data that was fetched ",
@@ -52,7 +52,7 @@ export default function ViewBooths({ route, navigation }: any) {
   };
 
   const onPressEditBooth = (
-    boothUuid: number,
+    booth_uuid: string,
     boothNumber: number,
     boothName: string,
     lat: number | null,
@@ -60,14 +60,14 @@ export default function ViewBooths({ route, navigation }: any) {
   ) => {
     console.log(
       "ViewBooths: navigating to EditCustomBooth for booth: ",
-      boothUuid,
+      booth_uuid,
       boothNumber,
       boothName,
       lat,
       lng
     );
     return navigation.navigate("EditCustomBooth", {
-      boothUuid,
+      booth_uuid,
       boothNameCurr: boothName,
       boothNumberCurr: boothNumber,
       boothLatCurr: lat,
@@ -75,8 +75,8 @@ export default function ViewBooths({ route, navigation }: any) {
     });
   };
 
-  const onPressDeleteBooth = (boothUuid: number) => {
-    console.log("Delete booth pressed for booth UUID: ", boothUuid);
+  const onPressDeleteBooth = (booth_uuid: string) => {
+    console.log("ViewBooths: Delete booth pressed for booth UUID: ", booth_uuid);
     // Implement delete functionality here
   };
 
@@ -135,7 +135,7 @@ export default function ViewBooths({ route, navigation }: any) {
                   style={styles.emptyImage}
                   source={require("../../../assets/booth.png")}
                 />
-                <Text style={styles.boothEmptyText}>No Markets</Text>
+                <Text style={styles.boothEmptyText}>No Booths</Text>
                 <Text style={styles.boothEmptyBodyText}>
                   You haven't added any booths yet.
                 </Text>
@@ -173,7 +173,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   scrollContainer: {
-    padding: 12,
+    paddingTop: 12, 
+    paddingBottom: 12, 
+    paddingRight: 0, 
+    paddingLeft: 0
   },
   scrollEmptyContainer: {
     flexGrow: 1,

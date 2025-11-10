@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { API_BASE_URL } from "../../../type/type";
 import { useMarket } from "../../Contexts/MarketContext";
+import LavenderBackground from "../../LavenderBackground";
 
 export default function AddCustomBooth({ navigation }: { navigation: any }) {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
@@ -15,8 +16,8 @@ export default function AddCustomBooth({ navigation }: { navigation: any }) {
   const [boothName, setBoothName] = useState("");
 
   // using the market context to get the selected market id
-  const { selectedMarketId } = useMarket();
-  const marketId = selectedMarketId;
+  const { selectedMarketUuid } = useMarket();
+  const market_uuid = selectedMarketUuid;
 
   // okay so when i send this, we should have the market id ... from somewhere and then the
   // we also need to get the user id? from the session i guess
@@ -55,13 +56,13 @@ export default function AddCustomBooth({ navigation }: { navigation: any }) {
     const postData = {
       boothName,
       boothNumber,
-      marketId,
+      market_uuid,
       location,
     };
-    console.log("Submitting booth data: ", postData);
+    console.log("AddCustomBooth: submitting booth data: ", postData);
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/custom_booth/1`,
+        `${API_BASE_URL}/custom_booth/123e4567-e89b-12d3-a456-426655440000`,
         postData
       );
       console.log(
@@ -77,6 +78,7 @@ export default function AddCustomBooth({ navigation }: { navigation: any }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+       <LavenderBackground />
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.backButton}>
@@ -148,7 +150,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center", // ✅ vertical center
     alignItems: "center", // ✅ horizontal center
-    backgroundColor: "#fff",
     paddingHorizontal: 24,
   },
   header: {
