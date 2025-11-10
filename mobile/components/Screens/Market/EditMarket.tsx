@@ -67,7 +67,7 @@ export default function EditMarketScreen({ route, navigation }: Props) {
         console.log("EditMarket: No response received:", error.request);
       } else {
         // Something else went wrong
-        console.log("EditMarket: rror setting up request:", error.message);
+        console.log("EditMarket: Error setting up request:", error.message);
       }
     }
     navigation.goBack();
