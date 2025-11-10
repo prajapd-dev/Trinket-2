@@ -31,7 +31,18 @@ export default function TabsNavigator({ session }: any) {
           ) : null
         }
       </Tab.Screen>
-      <Tab.Screen name="View Items" component={ViewItems} options={{headerShown: false}} />
+       <Tab.Screen
+        name="View Items"
+        options={{
+          headerShown: false,
+          // tabBarIcon: ({ focused }) => {
+          //   const iconName = focused ? "shopping" : "shopping-outline";
+          //   return <IconButton icon={iconName} />;
+          // },
+        }}
+      >
+        {(props) => <ViewItems {...props} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

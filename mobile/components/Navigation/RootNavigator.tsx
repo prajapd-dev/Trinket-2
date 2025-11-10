@@ -10,6 +10,7 @@ import AddMarketScreen from "../Screens/Market/AddMarket";
 import EditMarketScreen from "../Screens/Market/EditMarket";
 import AddCustomBooth from "../Screens/Booth/AddCustomBooth";
 import EditCustomBooth from "../Screens/Booth/EditCustomBooth";
+import AddItem from "../Screens/Item/AddItem";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -52,6 +53,7 @@ export function RootNavigator({
       />
           <Stack.Screen name="AddBooth" component={AddCustomBooth} options={{presentation: 'modal'}} />
           <Stack.Screen name="EditCustomBooth" component={EditCustomBooth} options={{presentation: 'modal'}} />
+          <Stack.Screen name="AddItem" component={AddItem} options={{presentation: 'modal'}} />
           <Stack.Screen name="MainTabs">
             {(props) => <TabsNavigator {...props} session={session} />}
           </Stack.Screen>

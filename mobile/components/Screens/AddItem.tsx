@@ -19,7 +19,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function AddItem({ navigation }: any) {
+export default function AddItemNOUSE({ navigation }: any) {
   const [images, setImages] = useState<string[]>([]);
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,10 +36,10 @@ export default function AddItem({ navigation }: any) {
     // Add commas to integer part
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-    console.log("Price parts: ", parts);
+    console.log("updatePriceText: Price parts: ", parts);
     if (parts.length > 2) {
       text = parts[0] + "." + parts[1]; // drop extra dots
-      console.log("Corrected price text with single decimal: ", text);
+      console.log("updatePriceText: Corrected price text with single decimal: ", text);
     }
 
     // Limit to two decimal digits
@@ -47,7 +47,7 @@ export default function AddItem({ navigation }: any) {
       parts[1] = parts[1].slice(0, 2);
     }
 
-    console.log("Final price parts before rejoin: ", parts);
+    console.log("updatePriceText: Final price parts before rejoin: ", parts);
     // Rejoin and update
     text = parts.join(".");
     setPrice(text);

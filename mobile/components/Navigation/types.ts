@@ -15,6 +15,7 @@ export type RootStackParamList = {
   EditMarketScreen: MarketDataCurr;
   AddBooth: undefined;
   EditCustomBooth: undefined;
+  AddItem: undefined; 
 };
 
 // Bottom tab routes
