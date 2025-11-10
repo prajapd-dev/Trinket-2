@@ -48,7 +48,10 @@ export default function EditCustomBooth({
       console.log("Location permission status: ", status);
       if (status !== "granted") {
         console.log("EditCustomBooth: Location permission denied.");
-        Alert.alert("EditCustomBooth: Permission denied", "Location access is required.");
+        Alert.alert(
+          "EditCustomBooth: Permission denied",
+          "Location access is required."
+        );
         return;
       }
 
@@ -127,11 +130,20 @@ export default function EditCustomBooth({
       console.log("EditCustomBooth response: ", response.data);
       Alert.alert("Booth Saved", "Your booth has been saved successfully.");
     } catch (error: any) {
-      console.error(
-        "EditCustomBooth submission error: ",
-        error.response?.data || error.message
-      );
-      Alert.alert("Error", "Failed to update booth.");
+      if (error.response) {
+        // Server responded with a status outside 2xx
+        console.log("EditMarket: Status code:", error.response.status);
+        console.log(
+          "EditMarket: Error message from server:",
+          error.response.data
+        );
+      } else if (error.request) {
+        // Request was made but no response received
+        console.log("EditMarket: No response received:", error.request);
+      } else {
+        // Something else went wrong
+        console.log("EditMarket: Error setting up request:", error.message);
+      }
     }
     navigation.goBack();
   };
