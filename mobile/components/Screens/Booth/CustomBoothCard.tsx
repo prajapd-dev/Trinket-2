@@ -41,7 +41,7 @@ export default function CustomBoothCard({
           ) : (
             <View style={styles.placeholder}>
               <Text variant="bodyMedium" style={styles.placeholderText}>
-               Add a Trinket!
+                Add a Trinket!
               </Text>
             </View>
           )}
@@ -70,7 +70,7 @@ export default function CustomBoothCard({
                 icon="pencil"
                 size={20}
                 onPress={onEditPress}
-                style={styles.icon}
+                style={[styles.icon, styles.editIcon]}
               />
               <IconButton
                 icon="trash-can"
@@ -82,35 +82,34 @@ export default function CustomBoothCard({
           </View>
 
           {/* Button section with locked spacing */}
-        <View style={styles.buttonContainer}>
-  {/* Always on top */}
-  <Button mode="outlined" style={styles.button}>
-    View Booth Items
-  </Button>
+          <View style={styles.buttonContainer}>
+            {/* Always on top */}
+            <Button mode="outlined" style={styles.button}>
+              View Booth Items
+            </Button>
 
-  {/* Always below, reserve space even if missing */}
-  {lat && lng ? (
-    <Button
-      icon="map-marker"
-      mode="outlined"
-      style={styles.locationButton}
-      onPress={openGoogleMaps}
-    >
-      Return to Booth
-    </Button>
-  ) : (
-    // <View style={[styles.locationButton, styles.hiddenButton]} />
-     <Button
-      icon="map-marker"
-      mode="outlined"
-      style={[styles.locationButton, {opacity: 0.4}]}
-      labelStyle={{color: "#c0c0c0", }}
-    >
-      Return to Booth
-    </Button>
-  )}
-</View>
-
+            {/* Always below, reserve space even if missing */}
+            {lat && lng ? (
+              <Button
+                icon="map-marker"
+                mode="outlined"
+                style={styles.locationButton}
+                onPress={openGoogleMaps}
+              >
+                Return to Booth
+              </Button>
+            ) : (
+              // <View style={[styles.locationButton, styles.hiddenButton]} />
+              <Button
+                icon="map-marker"
+                mode="outlined"
+                style={[styles.locationButton, { opacity: 0.4 }]}
+                labelStyle={{ color: "#c0c0c0" }}
+              >
+                Return to Booth
+              </Button>
+            )}
+          </View>
         </View>
       </View>
     </Card>
@@ -152,16 +151,19 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "center", // vertically align title + icons
+    justifyContent: "space-between", // push icons to the right
   },
   titleContainer: {
-    flex: 1,
-    flexShrink: 1,
+    flex: 1, // let the title take available space
+    paddingRight: 8, // small gap before icons
   },
   title: {
     fontWeight: "600",
     fontSize: 16,
     marginBottom: 2,
+    includeFontPadding: false, // Android tweak for alignment
+    textAlignVertical: "center",
   },
   boothID: {
     color: "#6b6b6b",
@@ -170,27 +172,32 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 8,
   },
   icon: {
     margin: 0,
+  },
+  editIcon: {
+    backgroundColor: "rgba(192, 192, 192, 0.3)",
+    borderRadius: 50,
+    marginRight: 7,
   },
   deleteIcon: {
     backgroundColor: "rgba(220, 53, 69, 0.1)",
     borderRadius: 50,
   },
-buttonContainer: {
-  marginTop: 10,
-  justifyContent: "flex-start",
-},
-button: {
-  marginTop: 4,
-},
-locationButton: {
-  marginTop: 10,
-},
-hiddenButton: {
-  opacity: 0, // invisible but keeps the space
-  height: 40, // same height as the normal button
-},
+
+  buttonContainer: {
+    marginTop: 10,
+    justifyContent: "flex-start",
+  },
+  button: {
+    marginTop: 4,
+  },
+  locationButton: {
+    marginTop: 10,
+  },
+  hiddenButton: {
+    opacity: 0, // invisible but keeps the space
+    height: 40, // same height as the normal button
+  },
 });
