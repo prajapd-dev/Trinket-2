@@ -47,59 +47,66 @@ const s3 = new S3Client({
   region: region,
 });
 
-app.get("/api/custom_market/:user_id", async (req, res) => {
-  const { user_id } = req.params;
+app.get("/api/custom_market/:user_uuid", async (req, res) => {
+  const { user_uuid } = req.params;
   console.log(
-    "app.get market/userid: retrieving market data from index.ts with userid: ",
-    user_id
+    "app.get market/user_uuid: retrieving market data from index.ts with user_uuid: ",
+    user_uuid
   );
   try {
-    const getMarkets = await sql`
-        SELECT * FROM custom_market WHERE user_id = ${user_id} ORDER BY startDate DESC`;
+    const getMarkets: Partial<MarketEvent>[] = await sql`
+        SELECT * FROM custom_market WHERE user_uuid = ${user_uuid} ORDER BY startDate DESC`;
     console.log(
       "app.get: markets retrived by user id: ",
-      user_id,
+      user_uuid,
       "markets",
       PrettyJSON(getMarkets)
     );
 
     for (const market of getMarkets) {
-      const key = `user-uploads/${user_id}/${market.img_name}`;
+      if (!market.img_name) continue; 
+      const key = `user-uploads/${user_uuid}/markets/${market.img_name}`;
       const getObjectParams = {
         Bucket: bucketName,
         Key: key,
       };
       const command = new GetObjectCommand(getObjectParams);
       const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+      // add img_url from amazon s3 bucket - because img_url is not actually stored
       market.img_url = url;
     }
     return res.status(200).json({
       markets: getMarkets,
-      message: "app.get market/user_id: Successfully fetched markets",
+      message: "app.get market/user_uuid: Successfully fetched markets",
       success: true,
     });
   } catch (error) {
-    console.log("app.get market/user_id: error getting market event", error);
+    console.log("app.get market/user_uuid: error getting market event", error);
     res.status(500).json({
       markets: [],
-      message: `app.get market/user_id: Internal Server Error, could not fetch market events made by user: ${user_id}`,
+      message: `app.get market/user_uuid: Internal Server Error, could not fetch market events made by user: ${user_uuid}`,
       success: false,
     });
   }
 });
 
-app.get("/api/custom_booth/:marketID/:userID", async (req, res) => {
-  const { marketID, userID } = req.params;
+app.get("/api/custom_booth/:market_uuid/:user_uuid", async (req, res) => {
+  const { market_uuid, user_uuid } = req.params;
   console.log(
-    "app.get booth/marketid: retrieving booth data from index.ts with marketID: ",
-    marketID
+    "app.get booth/market_uuid: retrieving booth data from index.ts with market_uuid: ",
+    market_uuid
   );
   try {
-    const getBooths = await sql`
-        SELECT * FROM custom_booth WHERE market_id = ${marketID} AND user_id = ${userID} ORDER BY name ASC`;
+    const getBooths = await sql` SELECT b.* 
+      FROM custom_booth b
+      JOIN custom_market market ON b.market_uuid = market.uuid
+      WHERE market.uuid = ${market_uuid}
+      AND market.user_uuid = ${user_uuid}
+      ORDER BY name ASC`;
     console.log(
-      "app.get: booths retrived by market id: ",
-      marketID,
+      "app.get: booths retrived by market uuid: ",
+      market_uuid,
       "booths",
       PrettyJSON(getBooths)
     );
@@ -108,47 +115,48 @@ app.get("/api/custom_booth/:marketID/:userID", async (req, res) => {
       booths: getBooths,
     });
   } catch (error) {
-    console.log("app.get booth/marketid: error getting booths", error);
+    console.log("app.get booth/market_uuid: error getting booths", error);
     res.status(500).json({
-      message: `Internal Server Error, could not fetch booths for market: ${marketID}`,
+      message: `Internal Server Error, could not fetch booths for market: ${market_uuid}`,
     });
   }
 });
 
 app.post(
-  "/api/custom_market/:userID",
+  "/api/custom_market/:user_uuid",
   upload.single("image"),
   async (req, res) => {
-    const { userID } = req.params;
-    const { name, startdate, enddate, img_url } = req.body;
-    const key = `user-uploads/${userID}/${req.file?.originalname}`;
-
+    const { user_uuid } = req.params;
+    const { name, startdate, enddate } = req.body;
+    let img_name = null; 
     console.log(
-      "app.post custom_market/userid: req.body: ",
+      "app.post custom_market/user_uuid: req.body: ",
       JSON.stringify(req.body)
     );
-    console.log("app.post custom_market/userid: req.file: ", req.file);
+    console.log("app.post custom_market/user_uuid: req.file: ", req.file);
     try {
       if (req.file !== undefined) {
+        const key = `user-uploads/${user_uuid}/markets/${req.file.originalname}`;
         const params: PutObjectCommandInput = {
           Bucket: bucketName,
           Key: key,
           Body: req.file.buffer,
           ContentType: req.file.mimetype,
         };
+        img_name = req.file.originalname;
         const command = new PutObjectCommand(params);
         await s3.send(command);
+      }
         const insertMarket = await sql`
-            INSERT INTO custom_market(user_id, name, startdate, enddate, img_name, img_url)
-            VALUES (${userID}, ${name}, ${startdate}, ${enddate}, ${req.file.originalname}, ${img_url})
+            INSERT INTO custom_market(user_uuid, name, startdate, enddate, img_name)
+            VALUES (${user_uuid}, ${name}, ${startdate}, ${enddate}, ${img_name})
             RETURNING *
         `;
         return res.status(201).json({
           message: "successfully uploaded image to s3 and updated record",
           insertMarket,
         });
-      }
-    } catch (error) {
+      } catch (error) {
       console.error(
         "Error getting image to post to S3 and/or inserting into table: ",
         error
@@ -160,19 +168,21 @@ app.post(
   }
 );
 
-app.post("/api/custom_booth/:userID", async (req, res) => {
-  const { userID } = req.params;
-  const { boothName, boothNumber, location, marketId } = req.body;
+app.post("/api/custom_booth/:user_uuid", async (req, res) => {
+  const { user_uuid } = req.params;
+  const { boothName, boothNumber, location, market_uuid } = req.body;
 
   console.log(
-    "app.post custom_booth/userid: req.body: ",
+    "app.post custom_booth/user_uuid: req.body: ",
     JSON.stringify(req.body)
   );
 
+  // <missing> check if market exists before adding booth using user_uuid
+
   try {
     const insertBooth = await sql`
-            INSERT INTO custom_booth(name, number, user_id, market_id, latitude, longitude)
-            VALUES (${boothName}, ${boothNumber}, ${userID}, ${marketId}, ${location?.lat}, ${location?.lng})
+            INSERT INTO custom_booth(name, number, market_uuid, latitude, longitude)
+            VALUES (${boothName}, ${boothNumber}, ${market_uuid}, ${location?.lat}, ${location?.lng})
             RETURNING *
         `;
     return res.status(201).json({
@@ -187,8 +197,8 @@ app.post("/api/custom_booth/:userID", async (req, res) => {
   }
 });
 
-app.patch("/api/custom_booth/:boothID", async (req, res) => {
-  const { boothID } = req.params;
+app.patch("/api/custom_booth/:booth_uuid", async (req, res) => {
+  const { booth_uuid } = req.params;
   const updates = req.body as Partial<CustomBooth>;
 
   console.log("app.patch custom_booth updates: ", updates);
@@ -198,7 +208,7 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
 
   //check if booth exists under market
   const existing =
-    await sql`SELECT * FROM custom_booth WHERE uuid = ${boothID}`;
+    await sql`SELECT * FROM custom_booth WHERE uuid = ${booth_uuid}`;
   if (existing.length == 0) {
     return res.status(404).json({ error: "Booth not found" });
   }
@@ -207,7 +217,7 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
   const values: any[] = [];
   let i = 1;
 
-  // because we are creating the key values for the sql statement, it is 
+  // because we are creating the key values for the sql statement, it is
   // important that the key matches the column name in the db
   for (const [key, value] of Object.entries(updates)) {
     setClauses.push(`${key} = $${i}`);
@@ -223,7 +233,7 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
   try {
     const query = `UPDATE custom_booth 
     SET ${setClauses.join(", ")}
-    WHERE uuid = ${boothID}
+    WHERE uuid = ${booth_uuid}
     RETURNING *`;
 
     const updateBooth = await sql.query(query, values);
@@ -239,13 +249,13 @@ app.patch("/api/custom_booth/:boothID", async (req, res) => {
 });
 
 app.patch(
-  "/api/custom_market/:market_uuid/:user_id",
+  "/api/custom_market/:market_uuid/:user_uuid",
   upload.single("image"),
   async (req, res) => {
-    const { market_uuid, user_id } = req.params;
+    const { market_uuid, user_uuid } = req.params;
     const updates = req.body as Partial<MarketEvent>; // may contain any subset of fields
 
-      console.log("app.patch custom_market updates: ", updates);
+    console.log("app.patch custom_market updates: ", updates);
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: "No fields to update" });
@@ -258,6 +268,7 @@ app.patch(
       return res.status(404).json({ error: "Market not found" });
     }
 
+    console.log("app.patch/custom_market values to patch: ", updates)
     const setClauses: string[] = [];
     const values: any[] = [];
     let i = 1;
@@ -271,7 +282,7 @@ app.patch(
     try {
       if (req.file !== undefined) {
         console.log("app.patch: uploading new image to S3");
-        const key = `user-uploads/${user_id}/${req.file?.originalname}`;
+        const key = `user-uploads/${user_uuid}/markets/${req.file.originalname}`;
         const params: PutObjectCommandInput = {
           Bucket: bucketName,
           Key: key,
@@ -279,17 +290,17 @@ app.patch(
           ContentType: req.file.mimetype,
         };
 
+        // setClauses.push(`img_name=$${i}`)
+        // values.push(req.file.originalname)
+        //  i++;
         const command = new PutObjectCommand(params);
-        setClauses.push(`img_name = $${i}`);
-        values.push(req.file.originalname);
-        i++;
         await s3.send(command);
       }
 
       const query = `
     UPDATE custom_market
     SET ${setClauses.join(", ")}
-    WHERE uuid = ${market_uuid} AND user_id = ${user_id}
+    WHERE uuid = '${market_uuid}' AND user_uuid = '${user_uuid}'
     RETURNING *;
   `;
 
@@ -301,10 +312,9 @@ app.patch(
         message: "app.patch: Market updated successfully",
         updatedMarket: updatedMarket,
       });
-    } catch {
-      return res
-        .status(500)
-        .json({ error: "app.patch: Internal server error" });
+    } catch (err: any) {
+  console.error(err);
+  res.status(500).json({ error: err.message });
     }
   }
 );
