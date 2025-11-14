@@ -16,19 +16,19 @@ export default function App() {
   // }
 
   return (
-    <PaperProvider>
-      <View style={styles.container}>
-        <MarketProvider>
-          <NavigationContainer>
-            <RootNavigator
-              session={session}
-              showOnboarding={showOnboarding}
-              setShowOnboarding={setShowOnboarding}
-            />
-          </NavigationContainer>
-        </MarketProvider>
-      </View>
-    </PaperProvider>
+      <PaperProvider>
+        <View style={styles.container}>
+          <MarketProvider>
+            <NavigationContainer>
+              <RootNavigator
+                session={session}
+                showOnboarding={showOnboarding}
+                setShowOnboarding={setShowOnboarding}
+              />
+            </NavigationContainer>
+          </MarketProvider>
+        </View>
+      </PaperProvider>
   );
 }
 
