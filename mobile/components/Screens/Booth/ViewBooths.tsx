@@ -9,6 +9,7 @@ import AddBooth from "../../Buttons/AddBooth";
 import { useMarket } from "../../Contexts/MarketContext";
 import LavenderBackground from "../../LavenderBackground";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import GlowBorder from "../../GlowBorder";
 
 type ViewBoothsFromAPI = {
   uuid: string;
@@ -29,6 +30,7 @@ export default function ViewBooths({ route, navigation }: any) {
   const { marketEndDate, marketName, marketStartDate } = route.params;
   const { selectedMarketUuid: market_uuid } = useMarket();
   const [booths, setBooths] = useState<ViewBoothsFromAPI[]>([]);
+  const [updatedBoothUuid, setUpdatedBoothUuid] = useState("");
 
   const onPressAddBooth = () => {
     return navigation.navigate("AddBooth", navigation);
@@ -51,6 +53,9 @@ export default function ViewBooths({ route, navigation }: any) {
     setBooths(data.booths);
   };
 
+  const onSuccessfulUpdate = (booth_uuid: string) => {
+     setUpdatedBoothUuid(booth_uuid);
+  }
   const onPressEditBooth = (
     booth_uuid: string,
     boothNumber: number,
@@ -66,17 +71,21 @@ export default function ViewBooths({ route, navigation }: any) {
       lat,
       lng
     );
-    return navigation.navigate("EditCustomBooth", {
+    navigation.navigate("EditCustomBooth", {
       booth_uuid,
       boothNameCurr: boothName,
       boothNumberCurr: boothNumber,
       boothLatCurr: lat,
       boothLngCurr: lng,
+      onSuccessfulUpdate: onSuccessfulUpdate
     });
   };
 
   const onPressDeleteBooth = (booth_uuid: string) => {
-    console.log("ViewBooths: Delete booth pressed for booth UUID: ", booth_uuid);
+    console.log(
+      "ViewBooths: Delete booth pressed for booth UUID: ",
+      booth_uuid
+    );
     // Implement delete functionality here
   };
 
@@ -109,25 +118,33 @@ export default function ViewBooths({ route, navigation }: any) {
             /* Render booth cards here when data is fetched */
             booths.length > 0 ? (
               booths.map((booth) => (
-                <View key={booth.uuid} style={styles.verticallySpaced}>
-                  <CustomBoothCard
-                    key={booth.uuid}
-                    name={booth.name}
-                    number={booth.number}
-                    lat={booth.latitude}
-                    lng={booth.longitude}
-                    onEditPress={() =>
-                      onPressEditBooth(
-                        booth.uuid,
-                        booth.number,
-                        booth.name,
-                        booth.latitude,
-                        booth.longitude
-                      )
-                    }
-                    onDeletePress={() => onPressDeleteBooth(booth.uuid)}
-                  />
-                </View>
+                <GlowBorder
+                 key={booth.uuid}
+                  visible={updatedBoothUuid === booth.uuid}
+                  borderRadius={12}
+                  style={{ marginVertical: 4 }}
+                  onSuccessfulUpdate={onSuccessfulUpdate}
+                >
+                  <View key={booth.uuid} style={styles.verticallySpaced}>
+                    <CustomBoothCard
+                      key={booth.uuid}
+                      name={booth.name}
+                      number={booth.number}
+                      lat={booth.latitude}
+                      lng={booth.longitude}
+                      onEditPress={() =>
+                        onPressEditBooth(
+                          booth.uuid,
+                          booth.number,
+                          booth.name,
+                          booth.latitude,
+                          booth.longitude
+                        )
+                      }
+                      onDeletePress={() => onPressDeleteBooth(booth.uuid)}
+                    />
+                  </View>
+                </GlowBorder>
               ))
             ) : (
               <>
@@ -173,10 +190,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   scrollContainer: {
-    paddingTop: 12, 
-    paddingBottom: 12, 
-    paddingRight: 0, 
-    paddingLeft: 0
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingRight: 0,
+    paddingLeft: 0,
   },
   scrollEmptyContainer: {
     flexGrow: 1,

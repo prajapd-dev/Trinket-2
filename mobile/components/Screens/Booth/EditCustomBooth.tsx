@@ -21,6 +21,7 @@ export default function EditCustomBooth({
     boothNumberCurr,
     boothLatCurr,
     boothLngCurr,
+    onSuccessfulUpdate
   } = route.params;
   console.log("EditCustomBooth req.params: ", route.params);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
@@ -32,7 +33,9 @@ export default function EditCustomBooth({
   const [boothNumber, setBoothNumber] = useState(boothNumberCurr || "");
   const [boothName, setBoothName] = useState(boothNameCurr || "");
   const [loading, setLoading] = useState(false);
+
   // using the market context to get the selected market id
+  // i should be using this to double check that the booth is in the correct market it's just unsued right now
   const { selectedMarketUuid: selectedMarketId } = useMarket();
   const marketId = selectedMarketId;
 
@@ -128,7 +131,8 @@ export default function EditCustomBooth({
         { headers: { "Content-Type": "application/json" } }
       );
       console.log("EditCustomBooth response: ", response.data);
-      Alert.alert("Booth Saved", "Your booth has been saved successfully.");
+      onSuccessfulUpdate(booth_uuid);
+      navigation.goBack();
     } catch (error: any) {
       if (error.response) {
         // Server responded with a status outside 2xx
@@ -145,7 +149,6 @@ export default function EditCustomBooth({
         console.log("EditMarket: Error setting up request:", error.message);
       }
     }
-    navigation.goBack();
   };
 
   return (
